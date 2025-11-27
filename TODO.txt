@@ -1,0 +1,85 @@
+App Name: PrimeDay 🚀
+
+What it Does: Tracks your whole day, summarizes it with AI, and gives you a simple routine to improve daily. 📅🤖
+
+========================================
+
+Top 5 Features: ⭐
+
+Onboarding + Baseline 🏁
+
+Quick Daily Log 📝
+
+Habit Checklist ✅
+
+AI Daily Summary 🧠
+
+Weekly Review 📊
+
+========================================
+
+Pages: 📄
+
+Onboarding Page 🏁
+
+Baseline Setup Page ⚙️
+
+Routine Page 🔄
+
+Daily Log Page 📝
+
+Habit Page ✅
+
+AI Summary Page 🧠
+
+Weekly Review Page 📊
+
+Home Page 🏠
+
+Settings Page ⚙️
+
+========================================
+
+APIs: 🔗
+
+POST /api/user/baseline 📤
+
+GET /api/user/profile 📥
+
+PUT /api/user/settings 🔄
+
+GET /api/routine/generate 🤖
+
+POST /api/log/add ➕
+
+GET /api/log/today 📅
+
+GET /api/habits 📋
+
+PUT /api/habits/update ✏️
+
+POST /api/ai/summary 🧠
+
+GET /api/review/weekly 📊
+
+GET /api/review/export 📤
+
+========================================
+
+Build Order: 🛠️
+
+Auth + DB 🔐
+
+Onboarding 🏁
+
+Routine 🔄
+
+Daily Log 📝
+
+Habits ✅
+
+AI Summary 🧠
+
+Weekly Review 📊
+
+========================================
