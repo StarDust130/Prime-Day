@@ -51,7 +51,7 @@ export default function Home() {
                 className="relative w-full h-full"
               >
                 <Image
-                  src="/anime-girl-2.png"
+                  src="/anime-girl-5.png"
                   alt="Mascot"
                   fill
                   className="object-contain  relative z-10"
@@ -106,7 +106,7 @@ export default function Home() {
               className="relative w-full h-full"
             >
               <Image
-                src="/anime-girl-2.png"
+                src="/anime-girl-5.png"
                 alt="Mascot"
                 fill
                 className="object-contain drop-shadow-2xl relative z-10"
