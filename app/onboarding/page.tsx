@@ -1,7 +1,10 @@
+import { Button } from "@/components/ui/button"
 
 const page = () => {
   return (
-    <div>page</div>
+    <div>
+        <Button>Hey</Button>
+    </div>
   )
 }
 export default page
