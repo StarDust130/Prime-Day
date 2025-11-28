@@ -113,7 +113,7 @@ export default function Home() {
             transition={{ delay: 0.4 }}
             className="flex flex-col items-center md:items-start gap-5 z-30"
           >
-            <Link href="/signup">
+            <Link href="/sign-up">
               <Button className="group relative font-bold md:mt-8 w-90 md:w-64 h-14 bg-white text-[#4F4FD9] hover:bg-indigo-50 text-lg  rounded-2xl shadow-[0_0_40px_-10px_rgba(255,255,255,0.4)] transition-all duration-300 active:scale-95 overflow-hidden cursor-pointer">
                 {/* Button Shine Effect */}
                 <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-linear-to-r from-transparent via-white/50 to-transparent z-10" />
@@ -124,7 +124,7 @@ export default function Home() {
             </Link>
 
             <div className="flex flex-col items-center md:items-start gap-1">
-              <Link href="/login">
+              <Link href="/sign-in">
                 <Button
                   variant="link"
                   className="text-white/90 text-sm font-semibold hover:text-white p-0 cursor-pointer h-auto"
