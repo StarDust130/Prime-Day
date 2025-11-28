@@ -35,7 +35,7 @@ export default function SignInPage() {
       {/* === TRUE CENTER WRAPPER (THIS FIXES YOUR PROBLEM) === */}
       <div className="w-full flex justify-center items-center">
         <div className="w-full max-w-md">
-          <div className="rounded-2xl border border-border bg-card shadow-sm p-4">
+          <div className="rounded-2xl border border-border bg-card shadow-sm p-3">
             <SignIn signUpUrl="/sign-up" />
           </div>
         </div>

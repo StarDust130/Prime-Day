@@ -43,7 +43,7 @@ export default function SignUpPage() {
               rounded-2xl 
               border border-border 
               bg-card 
-              p-6 
+              p-3
               shadow-sm
             "
           >
