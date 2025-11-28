@@ -34,31 +34,20 @@ export default function Home() {
               </p>
             </motion.div>
           </div>
-
-          {/* MOBILE IMAGE – good sizing */}
-          <div className="flex-1 min-h-0 w-full flex items-center justify-center relative md:hidden py-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.85 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-              className="relative w-full max-w-[360px] h-[40vh]"
-            >
+          <div className="flex-1 min-h-1 w-full flex items-center justify-center relative md:hidden py-4">
+            <div className="relative w-full max-w-[450px] h-[50vh]">
               <div className="absolute inset-0 rounded-full bg-white/20 blur-2xl" />
 
-              <motion.div
-                animate={{ y: [0, -8, 0] }}
-                transition={{ repeat: Infinity, duration: 4 }}
-                className="relative w-full h-full"
-              >
+              <div className="relative w-full h-full">
                 <Image
                   src="/anime-girl-5.png"
                   alt="Mascot"
                   fill
-                  className="object-contain  relative z-10"
+                  className="object-contain w-full h-full  relative z-10"
                   priority
                 />
-              </motion.div>
-            </motion.div>
+              </div>
+            </div>
           </div>
 
           {/* BUTTONS – always bottom on phone */}
