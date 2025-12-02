@@ -134,8 +134,13 @@ const GoalsPage = () => {
         {/* --- GOALS GRID --- */}
         {goals.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center bg-white/50 backdrop-blur-sm border-2 border-dashed border-gray-300 rounded-2xl">
-            <div className="relative w-48 h-48 mb-4 opacity-50">
-              <Target className="w-full h-full text-gray-200" />
+            <div className="relative w-48 h-48 mb-4">
+              <Image
+                src="/anime-girl-3.png"
+                alt="No goals"
+                fill
+                className="object-contain opacity-80"
+              />
             </div>
             <h3 className="text-xl font-black uppercase mb-2 text-gray-800">
               No Goals Set

@@ -70,7 +70,6 @@ export default function BottomNav() {
       path: "/friends",
       icon: <Users className="w-5 h-5" />,
     },
-    { label: "Goals", path: "/goals", icon: <Goal className="w-5 h-5" /> },
     {
       label: "More",
       path: "/more",

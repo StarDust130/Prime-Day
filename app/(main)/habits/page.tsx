@@ -44,26 +44,22 @@ const HabitsPage = () => {
   const router = useRouter();
   const [today, setToday] = useState(new Date());
 
-  // Calculate current week dates
+  // Calculate current week dates (Last 7 days ending today)
   const getWeekDates = (date: Date) => {
-    const d = new Date(date);
-    const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
-    const monday = new Date(d.setDate(diff));
-    monday.setHours(0, 0, 0, 0);
-
     const week = [];
-    for (let i = 0; i < 7; i++) {
-      const nextDay = new Date(monday);
-      nextDay.setDate(monday.getDate() + i);
-      week.push(nextDay);
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(date);
+      d.setDate(date.getDate() - i);
+      d.setHours(0, 0, 0, 0);
+      week.push(d);
     }
     return week;
   };
 
   const weekDates = getWeekDates(today);
-  const currentDayIndex = (today.getDay() + 6) % 7; // 0 for Monday, 6 for Sunday
-  const weekDays = ["M", "T", "W", "T", "F", "S", "S"];
+  const weekDays = weekDates.map((d) =>
+    d.toLocaleDateString("en-US", { weekday: "narrow" })
+  );
 
   // State
   const [viewMode, setViewMode] = useState<"day" | "week">("day");
@@ -590,7 +586,9 @@ const HabitsPage = () => {
                             habit,
                             dateForDay
                           );
-                          const isToday = i === currentDayIndex;
+                          const isToday =
+                            dateForDay.toDateString() ===
+                            new Date().toDateString();
                           return (
                             <div
                               key={i}

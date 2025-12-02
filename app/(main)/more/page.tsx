@@ -8,11 +8,20 @@ import {
   Bot,
   ArrowRight,
   ArrowLeft,
+  Goal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
 const menuItems = [
+  {
+    title: "Goals",
+    description: "Set & Track Targets",
+    icon: Goal,
+    href: "/goals",
+    color: "bg-[#F472B6]", // Pink
+    shadow: "shadow-[4px_4px_0px_0px_#DB2777]",
+  },
   {
     title: "Friends",
     description: "Connect & Compete",
@@ -114,7 +123,6 @@ export default function MorePage() {
             </Link>
           ))}
         </div>
-
       </div>
     </div>
   );
