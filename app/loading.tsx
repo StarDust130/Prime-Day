@@ -14,15 +14,16 @@ export default function Loading() {
             priority
           />
         </div>
-        
+
         <div className="flex flex-col items-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <Loader2 className="w-8 h-8 animate-spin text-neutral-900" />
           <div className="space-y-2">
             <h2 className="text-3xl font-black text-neutral-900 tracking-tight">
-              Hang tight!
+              Loading...
             </h2>
             <p className="text-neutral-600 text-lg font-medium">
-              Gathering the best deals for you...
+              &quot;The only way to do great work is to love what you do.&quot;
+              - Steve Jobs
             </p>
           </div>
         </div>
