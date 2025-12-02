@@ -1,336 +1,369 @@
 "use client";
 
+"use client";
+
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, CheckCircle2 } from "lucide-react";
+// Removed Image import as we are using abstract geometry now
+import {
+  ArrowRight,
+  ArrowLeft,
+  Moon,
+  Sun,
+  Target,
+  Smartphone,
+  Zap,
+  CheckCircle2,
+  XCircle,
+  LayoutGrid,
+  Brain,
+  Layers,
+} from "lucide-react";
 
 // --- Configuration ---
-const steps = [
+
+// The new professional Sky Blue
+const SKY_BLUE = "#38BDF8";
+
+const questions = [
   {
-    question: "How's your energy?",
-    emoji: "⚡",
+    id: "focus",
+    title: "What are your main goals?",
+    subtitle: "Select all that apply",
+    multi: true,
     options: [
-      { label: "Unstoppable", sub: "Ready to crush it", icon: "🔥" },
-      { label: "Ups and Downs", sub: "Need consistency", icon: "🌊" },
-      { label: "Running on Empty", sub: "Burned out", icon: "🪫" },
+      { id: "work", label: "Deep Work & Focus", icon: <Target /> },
+      { id: "health", label: "Fitness & Health", icon: <Zap /> },
+      { id: "mindset", label: "Mental Clarity", icon: <Sun /> },
+      { id: "learning", label: "Learning New Skills", icon: <Brain /> },
     ],
   },
   {
-    question: "Main focus today?",
-    emoji: "🎯",
+    id: "sleep",
+    title: "How is your sleep schedule?",
+    subtitle: "Be honest, we won't judge.",
+    multi: false,
     options: [
-      { label: "Deep Work", sub: "Kill procrastination", icon: "🧠" },
-      { label: "Healthy Habits", sub: "Fix sleep & routine", icon: "💤" },
-      { label: "Mental Clarity", sub: "Reduce overwhelm", icon: "🧘" },
+      { id: "bad", label: "Chaotic (< 6 hrs)", icon: <XCircle /> },
+      { id: "okay", label: "Average (6-7 hrs)", icon: <Moon /> },
+      { id: "good", label: "Optimized (8+ hrs)", icon: <CheckCircle2 /> },
     ],
   },
   {
-    question: "Current Status?",
-    emoji: "💼",
+    id: "obstacles",
+    title: "What kills your productivity?",
+    subtitle: "Select your enemies.",
+    multi: true,
     options: [
-      { label: "Student", sub: "Study / Exams", icon: "📚" },
-      { label: "Founder", sub: "Building Empire", icon: "🚀" },
-      { label: "Professional", sub: "9-5 Grind", icon: "🏢" },
-    ],
-  },
-  {
-    question: "Time commitment?",
-    emoji: "⏱️",
-    options: [
-      { label: "Quick Start", sub: "10-15 mins", icon: "👟" },
-      { label: "Solid Effort", sub: "30-45 mins", icon: "💪" },
-      { label: "All In", sub: "1 hour+", icon: "🏔️" },
+      { id: "phone", label: "Social Media / Phone", icon: <Smartphone /> },
+      { id: "procrastination", label: "Procrastination", icon: <LayoutGrid /> },
+      { id: "fatigue", label: "Low Energy", icon: <Moon /> },
     ],
   },
 ];
 
-const loadingMessages = [
-  "Calibrating your profile...",
-  "Designing your routine...",
-  "Finalizing dashboard...",
-];
+// --- Components ---
 
-export default function Onboarding() {
-  const router = useRouter();
-  const [currentStep, setCurrentStep] = useState(0);
-  const [selections, setSelections] = useState<{ [key: number]: number }>({});
-  const [isCompleting, setIsCompleting] = useState(false);
-  const [msgIndex, setMsgIndex] = useState(0);
+const OptionCard = ({ option, isSelected, onClick }: any) => {
+  return (
+    <motion.button
+      whileTap={{ scale: 0.98 }}
+      onClick={onClick}
+      // Using dynamic style for the selected background color to use our new SKY_BLUE variable
+      style={{ backgroundColor: isSelected ? SKY_BLUE : "white" }}
+      className={`
+        relative w-full p-5 text-left transition-all duration-200 
+        border-2 border-black rounded-xl flex items-center gap-4 group
+        ${
+          isSelected
+            ? `text-black shadow-[2px_2px_0px_0px_#000] translate-x-[2px] translate-y-[2px]`
+            : "text-gray-800 shadow-[6px_6px_0px_0px_#000] hover:translate-y-[-2px] hover:shadow-[8px_8px_0px_0px_#000] hover:bg-gray-50"
+        }
+      `}
+    >
+      {/* Icon Box */}
+      <div
+        className={`p-3 border-2 border-black rounded-lg transition-colors ${
+          isSelected ? "bg-black text-white" : "bg-white text-black"
+        }`}
+      >
+        {option.icon}
+      </div>
 
-  // Auto-Advance Logic
-  const handleSelect = (index: number) => {
-    setSelections((prev) => ({ ...prev, [currentStep]: index }));
-    // 400ms delay for visual feedback
-    setTimeout(() => {
-      if (currentStep < steps.length - 1) {
-        setCurrentStep((prev) => prev + 1);
-      } else {
-        setIsCompleting(true);
-      }
-    }, 400);
-  };
+      {/* Text */}
+      <span className="font-bold text-lg">{option.label}</span>
 
-  const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep((prev) => prev - 1);
-    }
-  };
+      {/* Checkmark Indicator */}
+      <div
+        className={`absolute right-5 w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+          isSelected ? "bg-black scale-100" : "scale-0"
+        }`}
+      >
+        {isSelected && <CheckCircle2 className="w-5 h-5 text-white" />}
+      </div>
+    </motion.button>
+  );
+};
 
-  // End Screen Logic
+// --- NEW PROFESSIONAL ENDING SCREEN ---
+const ProfessionalOverlay = () => {
+  const [textIndex, setTextIndex] = useState(0);
+  // More professional texts
+  const texts = [
+    "Synthesizing your profile...",
+    "Calibrating daily targets...",
+    "Finalizing Prime Day Dashboard.",
+  ];
+
   useEffect(() => {
-    if (isCompleting) {
-      // Cycle messages slower (every 1.5s)
-      const msgInterval = setInterval(() => {
-        setMsgIndex((prev) => (prev + 1) % loadingMessages.length);
-      }, 1500);
-
-      const redirectTimeout = setTimeout(() => {
-        router.push("/dashboard");
-      }, 5000);
-
-      return () => {
-        clearInterval(msgInterval);
-        clearTimeout(redirectTimeout);
-      };
-    }
-  }, [isCompleting, router]);
+    const interval = setInterval(() => {
+      setTextIndex((prev) => (prev + 1) % texts.length);
+    }, 1800);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white font-sans flex flex-col relative overflow-hidden selection:bg-cyan-500/30">
-      {/* --- Optimized Background --- */}
-      <div className="fixed inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-900/20 via-slate-950 to-black z-0" />
-      <div
-        className="fixed inset-0 z-0 opacity-20"
-        style={{
-          backgroundImage:
-            "linear-gradient(#334155 1px, transparent 1px), linear-gradient(to right, #334155 1px, transparent 1px)",
-          backgroundSize: "40px 40px",
-        }}
-      />
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="fixed inset-0 z-50 bg-[#121212] flex flex-col items-center justify-center p-6 overflow-hidden"
+    >
+      {/* Abstract Geometric Centerpiece instead of mascot */}
+      <div className="relative w-64 h-64 flex items-center justify-center mb-12">
+        {/* Rotating outer ring */}
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+          className="absolute inset-0 border-[4px] border-dashed border-gray-700 rounded-full"
+        />
 
-      <div className="relative z-10 w-full max-w-md mx-auto h-screen flex flex-col p-6">
+        {/* Bauhaus Shapes constructing together */}
+        <motion.div
+          initial={{ scale: 0.5, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.8, ease: "backOut" }}
+          className="relative z-10 grid grid-cols-2 gap-2"
+        >
+          <motion.div
+            animate={{ y: [0, -10, 0] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            className="w-16 h-16 bg-white border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_#38BDF8]"
+          />
+          <motion.div
+            animate={{ y: [0, 10, 0] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 0.2 }}
+            className="w-16 h-16 bg-[#38BDF8] border-2 border-black rounded-full"
+          />
+          <motion.div
+            animate={{ y: [0, -10, 0] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 0.4 }}
+            className="w-16 h-16 bg-black border-2 border-[#38BDF8]"
+          />
+          <motion.div
+            animate={{ y: [0, 10, 0] }}
+            transition={{ duration: 2, repeat: Infinity, delay: 0.6 }}
+            className="w-16 h-16 bg-white border-2 border-black flex items-center justify-center"
+          >
+            <Layers className="text-black" />
+          </motion.div>
+        </motion.div>
+
+        {/* Glow */}
+        <div className="absolute inset-0 bg-[#38BDF8]/20 blur-[80px] rounded-full animate-pulse" />
+      </div>
+
+      {/* Dynamic Text */}
+      <div className="z-10 h-12 text-center">
         <AnimatePresence mode="wait">
-          {!isCompleting ? (
-            <motion.div
-              key="quiz"
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.25 }}
-              className="flex-1 flex flex-col"
-            >
-              {/* --- TOP HEADER --- */}
-              <div className="flex items-center justify-between mb-6 pt-2">
-                <div className="w-10">
-                  {currentStep > 0 && (
-                    <button
-                      onClick={handleBack}
-                      className="p-3 rounded-full bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors"
-                    >
-                      <ChevronLeft size={20} />
-                    </button>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  {steps.map((_, idx) => (
-                    <motion.div
-                      key={idx}
-                      animate={{
-                        width: idx === currentStep ? 24 : 8,
-                        backgroundColor:
-                          idx <= currentStep ? "#38bdf8" : "#1e293b",
-                      }}
-                      className="h-1.5 rounded-full transition-all duration-300"
-                    />
-                  ))}
-                </div>
-                <div className="w-10" />
-              </div>
-
-              {/* --- HERO SECTION --- */}
-              <div className="flex flex-col items-center justify-center mb-8">
-                <motion.div
-                  key={`emoji-${currentStep}`}
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="text-7xl mb-6 filter drop-shadow-[0_0_20px_rgba(56,189,248,0.4)]"
-                >
-                  {steps[currentStep].emoji}
-                </motion.div>
-
-                <motion.h2
-                  key={`title-${currentStep}`}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-4xl font-black text-center leading-tight bg-clip-text text-transparent bg-gradient-to-br from-white via-cyan-100 to-blue-300"
-                >
-                  {steps[currentStep].question}
-                </motion.h2>
-              </div>
-
-              {/* --- OPTIONS --- */}
-              <div className="flex-1 space-y-3 pb-8">
-                {steps[currentStep].options.map((option, idx) => {
-                  const isSelected = selections[currentStep] === idx;
-                  return (
-                    <motion.button
-                      key={idx}
-                      initial={{ y: 10, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      transition={{ delay: idx * 0.05 }}
-                      onClick={() => handleSelect(idx)}
-                      className={`group w-full relative p-5 rounded-2xl border transition-all duration-200 flex items-center gap-5 text-left overflow-hidden
-                              ${
-                                isSelected
-                                  ? "border-cyan-500 bg-blue-900/30 shadow-[0_0_25px_rgba(6,182,212,0.15)]"
-                                  : "border-slate-800 bg-slate-900/60 hover:bg-slate-800 hover:border-slate-700"
-                              }
-                          `}
-                    >
-                      {isSelected && (
-                        <motion.div
-                          initial={{ x: "-100%" }}
-                          animate={{ x: "100%" }}
-                          transition={{ duration: 0.4 }}
-                          className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-500/10 to-transparent skew-x-12"
-                        />
-                      )}
-
-                      <div
-                        className={`text-2xl transition-transform duration-200 ${
-                          isSelected ? "scale-110" : "group-hover:scale-105"
-                        }`}
-                      >
-                        {option.icon}
-                      </div>
-
-                      <div className="relative z-10 flex-1">
-                        <h3
-                          className={`font-bold text-lg transition-colors ${
-                            isSelected ? "text-cyan-50" : "text-slate-200"
-                          }`}
-                        >
-                          {option.label}
-                        </h3>
-                        <p
-                          className={`text-sm transition-colors ${
-                            isSelected ? "text-cyan-200" : "text-slate-500"
-                          }`}
-                        >
-                          {option.sub}
-                        </p>
-                      </div>
-
-                      <div
-                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200
-                              ${
-                                isSelected
-                                  ? "bg-cyan-500 border-cyan-500 scale-100"
-                                  : "border-slate-700 scale-0 opacity-0"
-                              }`}
-                      >
-                        <CheckCircle2
-                          size={14}
-                          className="text-black font-bold"
-                        />
-                      </div>
-                    </motion.button>
-                  );
-                })}
-              </div>
-            </motion.div>
-          ) : (
-            // --- CLEAN "HUD" END SCREEN ---
-            <motion.div
-              key="creating"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="flex-1 flex flex-col items-center justify-center text-center h-full relative"
-            >
-              {/* 1. HUD Visuals (Replacing the messy particles/beam) */}
-              <div className="relative w-full h-[60vh] flex items-center justify-center mb-6">
-                {/* Outer Ring - Slow Rotate */}
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{
-                    duration: 20,
-                    repeat: Infinity,
-                    ease: "linear",
-                  }}
-                  className="absolute w-[340px] h-[340px] border border-dashed border-slate-700 rounded-full opacity-50"
-                />
-
-                {/* Inner Ring - Medium Rotate */}
-                <motion.div
-                  animate={{ rotate: -360 }}
-                  transition={{
-                    duration: 15,
-                    repeat: Infinity,
-                    ease: "linear",
-                  }}
-                  className="absolute w-[300px] h-[300px] border border-dotted border-cyan-900 rounded-full opacity-60"
-                />
-
-                {/* Pulsing Core Glow */}
-                <motion.div
-                  animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                  className="absolute w-[250px] h-[250px] bg-cyan-500/10 rounded-full blur-[40px]"
-                />
-
-                {/* Character */}
-                <motion.div
-                  animate={{ y: [0, -10, 0] }}
-                  transition={{
-                    repeat: Infinity,
-                    duration: 4,
-                    ease: "easeInOut",
-                  }}
-                  className="relative w-full h-full z-10 p-8"
-                >
-                  <Image
-                    src="/anime-girl-2.png"
-                    alt="Success"
-                    fill
-                    className="object-contain drop-shadow-[0_0_30px_rgba(34,211,238,0.4)]"
-                    priority
-                  />
-                </motion.div>
-              </div>
-
-              {/* 2. Clean Typography & Loading */}
-              <div className="relative z-20 w-full max-w-[280px]">
-                <AnimatePresence mode="wait">
-                  <motion.h3
-                    key={msgIndex}
-                    initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -5 }}
-                    className="text-xl font-bold text-white mb-2"
-                  >
-                    {loadingMessages[msgIndex]}
-                  </motion.h3>
-                </AnimatePresence>
-
-                {/* 3. Smooth Progress Bar */}
-                <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden mt-4">
-                  <motion.div
-                    className="h-full bg-cyan-400"
-                    initial={{ width: "0%" }}
-                    animate={{ width: "100%" }}
-                    transition={{ duration: 4.5, ease: "easeInOut" }}
-                  />
-                </div>
-              </div>
-            </motion.div>
-          )}
+          <motion.h2
+            key={textIndex}
+            initial={{ y: 20, opacity: 0, filter: "blur(4px)" }}
+            animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+            exit={{ y: -20, opacity: 0, filter: "blur(4px)" }}
+            className="text-xl font-bold text-white tracking-wider uppercase font-mono"
+          >
+            {texts[textIndex]}
+          </motion.h2>
         </AnimatePresence>
+      </div>
+
+      {/* Loading Bar using SKY_BLUE */}
+      <div className="w-64 h-1 bg-gray-800 mt-8 overflow-hidden z-10">
+        <motion.div
+          className="h-full"
+          style={{ backgroundColor: SKY_BLUE }}
+          initial={{ width: "0%" }}
+          animate={{ width: "100%" }}
+          transition={{ duration: 5.5, ease: "easeInOut" }}
+        />
+      </div>
+    </motion.div>
+  );
+};
+
+// --- Main Page ---
+
+export default function OnboardingPage() {
+  const router = useRouter();
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, string[]>>({});
+  const [showProOverlay, setShowProOverlay] = useState(false);
+
+  const currentQ = questions[step];
+  const totalSteps = questions.length;
+
+  const handleSelect = (optionId: string) => {
+    const currentSelections = answers[currentQ.id] || [];
+    if (currentQ.multi) {
+      if (currentSelections.includes(optionId)) {
+        setAnswers({
+          ...answers,
+          [currentQ.id]: currentSelections.filter((id) => id !== optionId),
+        });
+      } else {
+        setAnswers({
+          ...answers,
+          [currentQ.id]: [...currentSelections, optionId],
+        });
+      }
+    } else {
+      setAnswers({ ...answers, [currentQ.id]: [optionId] });
+    }
+  };
+
+  const hasSelection = (answers[currentQ.id]?.length || 0) > 0;
+
+  const handleNext = () => {
+    if (step < totalSteps - 1) {
+      setStep(step + 1);
+    } else {
+      setShowProOverlay(true);
+    }
+  };
+
+  useEffect(() => {
+    if (showProOverlay) {
+      const timer = setTimeout(() => {
+        router.push("/dashboard");
+      }, 5500);
+      return () => clearTimeout(timer);
+    }
+  }, [showProOverlay, router]);
+
+  const slideVariants = {
+    enter: { x: 30, opacity: 0 },
+    center: { x: 0, opacity: 1 },
+    exit: { x: -30, opacity: 0 },
+  };
+
+  return (
+    <div className="min-h-screen bg-[#F8FAFC] text-[#121212] font-sans overflow-hidden relative flex flex-col">
+      {showProOverlay && <ProfessionalOverlay />}
+
+      {/* Top bar accent */}
+      <div className="absolute top-0 left-0 w-full h-3 bg-black z-50" />
+
+      {/* --- Header --- */}
+      <div className="px-6 pt-12 pb-6 z-10 bg-[#F8FAFC]">
+        <div className="flex justify-between items-end mb-6">
+          <div>
+            <h1 className="font-black text-3xl tracking-tighter uppercase italic flex items-center gap-2">
+              <div
+                className="w-4 h-4 bg-black"
+                style={{ backgroundColor: SKY_BLUE }}
+              ></div>
+              Prime Day.
+            </h1>
+          </div>
+          <span className="font-mono font-bold text-xs text-gray-500">
+            STEP {step + 1} / {totalSteps}
+          </span>
+        </div>
+        {/* Progress Line using SKY_BLUE */}
+        <div className="h-[4px] w-full bg-gray-200 rounded-full overflow-hidden">
+          <motion.div
+            className="h-full"
+            style={{ backgroundColor: SKY_BLUE }}
+            initial={{ width: 0 }}
+            animate={{ width: `${((step + 1) / totalSteps) * 100}%` }}
+            transition={{ duration: 0.5, ease: "circOut" }}
+          />
+        </div>
+      </div>
+
+      {/* --- Question Area --- */}
+      <div className="flex-1 px-6 relative z-10 flex flex-col pt-4 pb-32 overflow-y-auto">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={step}
+            variants={slideVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ type: "spring", stiffness: 200, damping: 20 }}
+          >
+            <div className="mb-10">
+              <h2 className="text-4xl font-black mb-3 leading-[0.95] tracking-tight">
+                {currentQ.title}
+              </h2>
+              <p className="text-lg font-medium text-gray-500">
+                {currentQ.subtitle}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+              {currentQ.options.map((opt) => {
+                const isSelected = (answers[currentQ.id] || []).includes(
+                  opt.id
+                );
+                return (
+                  <OptionCard
+                    key={opt.id}
+                    option={opt}
+                    isSelected={isSelected}
+                    onClick={() => handleSelect(opt.id)}
+                  />
+                );
+              })}
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* --- Footer Nav --- */}
+      <div className="fixed bottom-0 left-0 right-0 p-6 bg-[#F8FAFC]/80 backdrop-blur-md border-t-2 border-gray-200 flex items-center justify-between z-20 safe-area-inset-bottom">
+        <button
+          onClick={() => step > 0 && setStep(step - 1)}
+          disabled={step === 0}
+          className={`p-4 rounded-xl border-2 border-gray-300 transition-all ${
+            step === 0
+              ? "opacity-30 text-gray-400 cursor-not-allowed"
+              : "bg-white text-black hover:bg-gray-100 active:scale-95 hover:border-black"
+          }`}
+        >
+          <ArrowLeft className="w-6 h-6" />
+        </button>
+
+        <button
+          onClick={handleNext}
+          disabled={!hasSelection}
+          // Using inline style for shadow color to match SKY_BLUE
+          style={{
+            boxShadow: hasSelection ? `4px 4px 0px 0px ${SKY_BLUE}` : "none",
+            backgroundColor: hasSelection ? "#121212" : "#E5E7EB",
+          }}
+          className={`flex-1 ml-4 flex items-center justify-center gap-3 py-4 rounded-xl font-black text-lg border-2 border-black transition-all duration-200 ${
+            !hasSelection
+              ? "opacity-50 text-gray-500 cursor-not-allowed border-gray-300"
+              : "text-white active:translate-y-[2px] active:shadow-none hover:bg-[#2a2a2a]"
+          }`}
+        >
+          {step === totalSteps - 1 ? "COMPLETE SETUP" : "CONTINUE"}
+          <ArrowRight
+            className={`w-5 h-5 ${hasSelection ? "animate-pulse" : ""}`}
+          />
+        </button>
       </div>
     </div>
   );
