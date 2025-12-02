@@ -8,7 +8,6 @@ import {
   Clock,
   CheckCircle2,
   Trash2,
-  MoreVertical,
   Flag,
   ArrowLeft,
 } from "lucide-react";
@@ -16,6 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import Loading from "@/app/loading";
 
 interface Goal {
   _id: string;
@@ -47,7 +47,7 @@ const GoalsPage = () => {
     } catch (error) {
       console.error("Failed to fetch goals", error);
     } finally {
-      setLoading(false);
+      // setLoading(false);
     }
   };
 
@@ -68,13 +68,6 @@ const GoalsPage = () => {
   const filteredGoals =
     filter === "all" ? goals : goals.filter((g) => g.type === filter);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#38BDF8]"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-24 md:p-8 pt-6 px-4 font-sans text-[#121212] overflow-hidden relative">
