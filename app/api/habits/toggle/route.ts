@@ -31,7 +31,7 @@ export async function POST(req: Request) {
 
     // Check if date exists in history
     const dateIndex = habit.completedDates.findIndex(
-      (d: string) => d === targetISO
+      (d: Date) => d.toISOString() === targetISO
     );
 
     let completed = false;

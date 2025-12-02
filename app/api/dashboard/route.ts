@@ -28,7 +28,7 @@ export async function GET(req: Request) {
 
     const activeHabits = habits.length;
     const completedToday = habits.filter((h) =>
-      h.completedDates.includes(todayISO)
+      h.completedDates.some((d: Date) => d.toISOString() === todayISO)
     ).length;
 
     const activeGoals = goals.filter((g) => g.status === "active").length;
