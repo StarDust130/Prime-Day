@@ -301,18 +301,43 @@ const CreatePageContent = () => {
 
                     <div className="flex gap-2 mb-4">
                       <div className="relative flex-1">
-                        <select
-                          value={aiCategory}
-                          onChange={(e) => setAiCategory(e.target.value)}
-                          className="w-full appearance-none bg-gray-50 border-2 border-black rounded-lg px-3 py-2 text-xs font-bold focus:outline-none"
+                        <button
+                          type="button"
+                          onClick={() => setIsCategoryOpen(!isCategoryOpen)}
+                          className="w-full flex items-center justify-between bg-white border-2 border-black rounded-lg px-3 py-2 text-xs font-bold hover:bg-gray-50 transition-colors"
                         >
-                          {aiCategories.map((cat) => (
-                            <option key={cat} value={cat}>
-                              {cat}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none" />
+                          {aiCategory}
+                          <ChevronDown
+                            className={`w-3 h-3 transition-transform ${
+                              isCategoryOpen ? "rotate-180" : ""
+                            }`}
+                          />
+                        </button>
+
+                        <AnimatePresence>
+                          {isCategoryOpen && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -5 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -5 }}
+                              className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_#000] z-50 max-h-40 overflow-y-auto"
+                            >
+                              {aiCategories.map((cat) => (
+                                <button
+                                  key={cat}
+                                  type="button"
+                                  onClick={() => {
+                                    setAiCategory(cat);
+                                    setIsCategoryOpen(false);
+                                  }}
+                                  className="w-full text-left px-3 py-2 text-xs font-bold hover:bg-[#38BDF8] hover:text-black transition-colors border-b border-gray-100 last:border-0"
+                                >
+                                  {cat}
+                                </button>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
                       <button
                         type="button"
