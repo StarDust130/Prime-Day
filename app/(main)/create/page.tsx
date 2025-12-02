@@ -19,6 +19,7 @@ import {
   Check,
   Loader2,
   Smile,
+  Sparkles,
 } from "lucide-react";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 import Loading from "@/app/loading";
@@ -39,6 +40,23 @@ const CreatePageContent = () => {
   const [selectedColor, setSelectedColor] = useState("bg-[#38BDF8]");
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
   const [showCustomEmoji, setShowCustomEmoji] = useState(false);
+  const [aiSuggestions, setAiSuggestions] = useState<any[]>([]);
+  const [loadingAi, setLoadingAi] = useState(false);
+
+  const fetchAiSuggestions = async () => {
+    setLoadingAi(true);
+    try {
+      const res = await fetch("/api/ai/suggest-habits");
+      const json = await res.json();
+      if (json.suggestions) {
+        setAiSuggestions(json.suggestions);
+      }
+    } catch (error) {
+      console.error("Failed to get suggestions");
+    } finally {
+      setLoadingAi(false);
+    }
+  };
 
   // Goal State
   const [description, setDescription] = useState("");
@@ -223,6 +241,71 @@ const CreatePageContent = () => {
             onSubmit={handleSubmit}
             className="space-y-8"
           >
+            {/* --- AI SUGGESTIONS --- */}
+            {activeTab === "habit" && (
+              <div className="mb-6 p-5 bg-white rounded-2xl border-2 border-black shadow-[4px_4px_0px_0px_#000]">
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-black rounded-lg text-[#38BDF8]">
+                      <Sparkles className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="block text-xs font-black uppercase tracking-widest text-gray-500">
+                        AI Assistant
+                      </span>
+                      <span className="block text-sm font-bold text-black">
+                        Smart Suggestions
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={fetchAiSuggestions}
+                    disabled={loadingAi}
+                    className="text-xs font-bold bg-[#38BDF8] border-2 border-black text-black px-4 py-2 rounded-lg shadow-[2px_2px_0px_0px_#000] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_#000] active:translate-y-[0px] active:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {loadingAi ? (
+                      <>
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        Thinking...
+                      </>
+                    ) : (
+                      "Generate Ideas"
+                    )}
+                  </button>
+                </div>
+
+                {aiSuggestions.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {aiSuggestions.map((s, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => {
+                          setName(s.name);
+                          setSelectedIcon(s.icon);
+                        }}
+                        className="group relative bg-gray-50 p-3 rounded-xl border-2 border-black text-left transition-all hover:bg-[#38BDF8] hover:shadow-[4px_4px_0px_0px_#000] hover:-translate-y-1"
+                      >
+                        <div className="text-2xl mb-2 bg-white w-10 h-10 flex items-center justify-center rounded-lg border-2 border-black group-hover:scale-110 transition-transform">
+                          {s.icon}
+                        </div>
+                        <div className="text-xs font-black text-black uppercase tracking-wide">
+                          {s.name}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-4 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                      Tap "Generate" to get personalized habits
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* --- NAME INPUT --- */}
             <div className="space-y-3">
               <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
