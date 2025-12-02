@@ -55,7 +55,7 @@ export default function BottomNav() {
   }, []);
 
   const handleNavigation = (path: string) => {
-    window.location.href = path;
+    window.location.assign(path);
   };
 
   const navItems = [
@@ -129,7 +129,7 @@ export default function BottomNav() {
                           : "text-gray-400 group-hover:text-black"
                       }`}
                     >
-                      {React.cloneElement(item.icon as React.ReactElement, {
+                      {React.cloneElement(item.icon as React.ReactElement<any>, {
                         strokeWidth: isActive ? 2.5 : 2,
                       })}
 
