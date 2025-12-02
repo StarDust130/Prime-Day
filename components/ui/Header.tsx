@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { LogOut, User, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 
 export default function Header() {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -88,10 +89,12 @@ export default function Header() {
         >
           {/* Logo Image */}
           <div className="relative w-10 h-10 md:w-12 md:h-12 transition-transform group-hover:scale-110 group-hover:-rotate-3 duration-200 bg-white border-2 border-black rounded-md shadow-[3px_3px_0px_0px_#000] p-1">
-            <img 
-              src="/icon.png" 
-              alt="Logo" 
+            <Image
+              src="/icon.png"
+              alt="Logo"
               className="w-full h-full object-contain"
+              priority
+              fill
             />
           </div>
 
@@ -106,7 +109,6 @@ export default function Header() {
 
         {/* RIGHT: Actions (User & Logout) */}
         <div className="flex items-center gap-3 md:gap-4">
-          
           {/* User Profile Button */}
           <button
             onClick={() => navigateTo("/account")}
@@ -115,7 +117,9 @@ export default function Header() {
           >
             <User className="w-5 h-5 text-black" />
             <span className="font-bold text-sm text-black hidden md:block">
-              {username ? username.charAt(0).toUpperCase() + username.slice(1) : "User"}
+              {username
+                ? username.charAt(0).toUpperCase() + username.slice(1)
+                : "User"}
             </span>
           </button>
 
