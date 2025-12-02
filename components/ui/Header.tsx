@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { LogOut, User, X, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -8,6 +8,10 @@ export default function Header() {
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const [username, setUsername] = useState<string | null>(null);
     const [isVisible, setIsVisible] = useState(false);
+    
+    // New state for scroll behavior
+    const [hideHeader, setHideHeader] = useState(false);
+    const lastScrollY = useRef(0);
 
     // Check login status on mount
     useEffect(() => {
@@ -20,6 +24,26 @@ export default function Header() {
         } else {
             setIsVisible(false);
         }
+    }, []);
+
+    // Handle Scroll Logic
+    useEffect(() => {
+        const handleScroll = () => {
+            const currentScrollY = window.scrollY;
+            
+            // If scrolling down AND past 50px (to avoid jitter at top), hide header
+            // If scrolling up, show header
+            if (currentScrollY > 50 && currentScrollY > lastScrollY.current) {
+                setHideHeader(true);
+            } else {
+                setHideHeader(false);
+            }
+            
+            lastScrollY.current = currentScrollY;
+        };
+
+        window.addEventListener("scroll", handleScroll, { passive: true });
+        return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
     const handleLogout = async () => {
@@ -48,7 +72,15 @@ export default function Header() {
     return (
         <>
             {/* --- HEADER BAR --- */}
-            <header className="bg-primary border-b-[3px] border-black h-16 md:h-20 px-4 md:px-6 flex items-center justify-between shadow-[0px_4px_0px_0px_rgba(0,0,0,0.1)] transition-all w-full fixed top-0 left-0 z-40">
+            <motion.header 
+                variants={{
+                    visible: { y: 0 },
+                    hidden: { y: "-100%" },
+                }}
+                animate={hideHeader ? "hidden" : "visible"}
+                transition={{ duration: 0.35, ease: "easeInOut" }}
+                className="bg-primary border-b-[3px] border-black h-16 md:h-20 px-4 md:px-6 flex items-center justify-between shadow-[0px_4px_0px_0px_rgba(0,0,0,0.1)] w-full fixed top-0 left-0 z-40"
+            >
                 {/* LEFT: Logo Composition */}
                 <button
                     className="group flex items-center gap-2 md:gap-3 cursor-pointer bg-transparent border-none p-0"
@@ -98,7 +130,7 @@ export default function Header() {
                         </span>
                     </button>
                 </div>
-            </header>
+            </motion.header>
 
             {/* Spacer - Matches header height */}
             <div className="h-16 md:h-20" />
