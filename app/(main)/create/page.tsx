@@ -21,6 +21,7 @@ import {
   Smile,
 } from "lucide-react";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
+import Loading from "@/app/loading";
 
 const CreatePageContent = () => {
   const router = useRouter();
@@ -97,7 +98,7 @@ const CreatePageContent = () => {
         } catch (error) {
           console.error("Failed to fetch habit details");
         } finally {
-          setFetching(false);
+          // setFetching(false);
         }
       };
       fetchHabit();
@@ -162,11 +163,7 @@ const CreatePageContent = () => {
   };
 
   if (fetching) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#38BDF8]" />
-      </div>
-    );
+    // return <Loading />;
   }
 
   return (
