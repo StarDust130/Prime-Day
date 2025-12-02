@@ -43,26 +43,12 @@ const CreatePageContent = () => {
   const [showCustomEmoji, setShowCustomEmoji] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState<any[]>([]);
   const [loadingAi, setLoadingAi] = useState(false);
-  const [aiCategory, setAiCategory] = useState("General");
-  const [showAiCategoryDropdown, setShowAiCategoryDropdown] = useState(false);
-  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
-
-  const aiCategories = [
-    "General",
-    "Health & Fitness",
-    "Productivity",
-    "Mindfulness",
-    "Learning",
-    "Finance",
-    "Social",
-  ];
+  const [showAiPopup, setShowAiPopup] = useState(false);
 
   const fetchAiSuggestions = async () => {
     setLoadingAi(true);
     try {
-      const res = await fetch(
-        `/api/ai/suggest-habits?category=${encodeURIComponent(aiCategory)}`
-      );
+      const res = await fetch("/api/ai/suggest-habits");
       const json = await res.json();
       if (json.suggestions) {
         setAiSuggestions(json.suggestions);
@@ -266,9 +252,12 @@ const CreatePageContent = () => {
                 {activeTab === "habit" && (
                   <button
                     type="button"
-                    onClick={() =>
-                      setShowAiCategoryDropdown(!showAiCategoryDropdown)
-                    }
+                    onClick={() => {
+                      setShowAiPopup(!showAiPopup);
+                      if (!showAiPopup && aiSuggestions.length === 0) {
+                        fetchAiSuggestions();
+                      }
+                    }}
                     className="text-[10px] font-black uppercase tracking-wider bg-black text-[#38BDF8] px-3 py-1 rounded-lg hover:bg-[#38BDF8] hover:text-black transition-colors flex items-center gap-1"
                   >
                     <Sparkles className="w-3 h-3" />
@@ -279,7 +268,7 @@ const CreatePageContent = () => {
 
               {/* AI POPUP CARD */}
               <AnimatePresence>
-                {showAiCategoryDropdown && activeTab === "habit" && (
+                {showAiPopup && activeTab === "habit" && (
                   <motion.div
                     initial={{ opacity: 0, height: 0, marginBottom: 0 }}
                     animate={{ opacity: 1, height: "auto", marginBottom: 16 }}
@@ -287,96 +276,67 @@ const CreatePageContent = () => {
                     className="relative w-full bg-white border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_#000] p-4 overflow-hidden"
                   >
                     <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-xs font-black uppercase tracking-widest">
+                      <h3 className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
                         AI Suggestions
+                        <button
+                          type="button"
+                          onClick={fetchAiSuggestions}
+                          disabled={loadingAi}
+                          className="ml-2 p-1 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50"
+                          title="Refresh Suggestions"
+                        >
+                          <Zap
+                            className={`w-3 h-3 ${
+                              loadingAi ? "animate-spin" : ""
+                            }`}
+                          />
+                        </button>
                       </h3>
                       <button
                         type="button"
-                        onClick={() => setShowAiCategoryDropdown(false)}
+                        onClick={() => setShowAiPopup(false)}
                         className="text-gray-400 hover:text-black"
                       >
                         ✕
                       </button>
                     </div>
 
-                    <div className="flex gap-2 mb-4">
-                      <div className="relative flex-1">
-                        <button
-                          type="button"
-                          onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-                          className="w-full flex items-center justify-between bg-white border-2 border-black rounded-lg px-3 py-2 text-xs font-bold hover:bg-gray-50 transition-colors"
-                        >
-                          {aiCategory}
-                          <ChevronDown
-                            className={`w-3 h-3 transition-transform ${
-                              isCategoryOpen ? "rotate-180" : ""
-                            }`}
-                          />
-                        </button>
-
-                        <AnimatePresence>
-                          {isCategoryOpen && (
-                            <motion.div
-                              initial={{ opacity: 0, y: -5 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -5 }}
-                              className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-black rounded-lg shadow-[4px_4px_0px_0px_#000] z-50 max-h-40 overflow-y-auto"
+                    <div className="space-y-2">
+                      {loadingAi ? (
+                        <div className="flex flex-col items-center justify-center py-8 gap-2">
+                          <Loader2 className="w-6 h-6 animate-spin text-[#38BDF8]" />
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                            Thinking...
+                          </p>
+                        </div>
+                      ) : aiSuggestions.length > 0 ? (
+                        <div className="grid gap-2">
+                          {aiSuggestions.map((s, i) => (
+                            <motion.button
+                              key={i}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: i * 0.1 }}
+                              type="button"
+                              onClick={() => {
+                                setName(s.name);
+                                setSelectedIcon(s.icon);
+                                setShowAiPopup(false);
+                              }}
+                              className="w-full flex items-center gap-3 p-3 rounded-lg bg-gray-50 hover:bg-[#38BDF8] border-2 border-transparent hover:border-black hover:shadow-[2px_2px_0px_0px_#000] transition-all text-left group"
                             >
-                              {aiCategories.map((cat) => (
-                                <button
-                                  key={cat}
-                                  type="button"
-                                  onClick={() => {
-                                    setAiCategory(cat);
-                                    setIsCategoryOpen(false);
-                                  }}
-                                  className="w-full text-left px-3 py-2 text-xs font-bold hover:bg-[#38BDF8] hover:text-black transition-colors border-b border-gray-100 last:border-0"
-                                >
-                                  {cat}
-                                </button>
-                              ))}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={fetchAiSuggestions}
-                        disabled={loadingAi}
-                        className="bg-[#38BDF8] border-2 border-black rounded-lg px-3 py-2 text-xs font-bold hover:shadow-[2px_2px_0px_0px_#000] active:translate-y-[1px] active:shadow-none transition-all disabled:opacity-50"
-                      >
-                        {loadingAi ? (
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                        ) : (
-                          <Zap className="w-3 h-3" />
-                        )}
-                      </button>
-                    </div>
-
-                    <div className="space-y-2 max-h-60 overflow-y-auto">
-                      {aiSuggestions.length > 0 ? (
-                        aiSuggestions.map((s, i) => (
-                          <button
-                            key={i}
-                            type="button"
-                            onClick={() => {
-                              setName(s.name);
-                              setSelectedIcon(s.icon);
-                              setShowAiCategoryDropdown(false);
-                            }}
-                            className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 border-2 border-transparent hover:border-black transition-all text-left group"
-                          >
-                            <span className="text-xl bg-white border-2 border-gray-200 group-hover:border-black rounded-md w-8 h-8 flex items-center justify-center">
-                              {s.icon}
-                            </span>
-                            <span className="text-xs font-bold group-hover:text-[#38BDF8]">
-                              {s.name}
-                            </span>
-                          </button>
-                        ))
+                              <span className="text-xl bg-white border-2 border-gray-200 group-hover:border-black rounded-md w-8 h-8 flex items-center justify-center transition-colors">
+                                {s.icon}
+                              </span>
+                              <span className="text-xs font-bold group-hover:text-black transition-colors">
+                                {s.name}
+                              </span>
+                            </motion.button>
+                          ))}
+                        </div>
                       ) : (
                         <div className="text-center py-4 text-gray-400 text-[10px] font-bold uppercase tracking-widest">
-                          Select category & hit zap
+                          No suggestions found
                         </div>
                       )}
                     </div>
