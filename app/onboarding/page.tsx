@@ -234,13 +234,6 @@ export default function OnboardingPage() {
 
   const hasSelection = (answers[currentQ.id]?.length || 0) > 0;
 
-  const handleNext = () => {
-    if (step < totalSteps - 1) {
-      setStep(step + 1);
-    } else {
-      setShowProOverlay(true);
-    }
-  };
 
   useEffect(() => {
     if (showProOverlay) {
@@ -255,6 +248,71 @@ export default function OnboardingPage() {
     enter: { x: 30, opacity: 0 },
     center: { x: 0, opacity: 1 },
     exit: { x: -30, opacity: 0 },
+  };
+
+React.useEffect(() => {
+  const userId = localStorage.getItem("primeDayUserId");
+  const hasOnboarded = localStorage.getItem("primeDayHasOnboarded");
+
+  // 1. If not logged in -> Go to Auth
+  if (!userId) {
+    router.replace("/auth");
+    return;
+  }
+
+  // 2. If already onboarded -> Go to Dashboard
+  if (hasOnboarded === "true") {
+    router.replace("/dashboard");
+    return;
+  }
+}, [router]);
+
+const saveOnboardingData = async () => {
+  try {
+    const userId = localStorage.getItem("primeDayUserId"); // Or get from cookie if you prefer, but localstorage is fine here
+
+    if (!userId) {
+      console.error("No user ID found! Redirecting...");
+      router.push("/auth");
+      return;
+    }
+
+    // --- FIX: DEFINE PAYLOAD HERE ---
+    const payload = {
+      userId,
+      focus: answers["focus"],
+      sleep: answers["sleep"] ? answers["sleep"][0] : null, // Handle single select array
+      obstacles: answers["obstacles"],
+    };
+    // -------------------------------
+
+    const res = await fetch("/api/onboarding", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload), // Now payload exists!
+    });
+
+    if (!res.ok) throw new Error("Failed to save");
+
+    // Mark as complete so middleware knows
+    // Note: Middleware checks cookies, but this helps client-side logic if needed
+    localStorage.setItem("primeDayHasOnboarded", "true");
+    console.log("Onboarding saved successfully");
+  } catch (error) {
+    console.error("Save Error:", error);
+  }
+};
+
+  const handleNext = async () => {
+    if (step < totalSteps - 1) {
+      setStep(step + 1);
+    } else {
+      // 1. Show the overlay immediately (User sees animation)
+      setShowProOverlay(true);
+
+      // 2. Save data in background while animation plays
+      await saveOnboardingData();
+    }
   };
 
   return (
