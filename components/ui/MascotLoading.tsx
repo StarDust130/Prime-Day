@@ -4,7 +4,7 @@ import React from 'react';
 
 const MascotLoading = () => {
     return (
-      <div className="h-screen bg-white flex flex-col items-center justify-center p-4">
+      <div className=" mt-60 md:mt-0 md:h-screen bg-white flex flex-col items-center justify-center p-4">
         <div className="flex flex-col items-center gap-6 max-w-md w-full text-center">
           <div className="relative w-64 h-64 animate-pulse">
             <Image

@@ -6,7 +6,15 @@ import { cookies } from "next/headers";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { userId, focus, sleep, obstacles } = body;
+    const {
+      userId,
+      focus,
+      sleep,
+      obstacles,
+      longTermVision,
+      dailyRoutine,
+      specificStruggles,
+    } = body;
 
     await connectDB();
 
@@ -16,6 +24,9 @@ export async function POST(req: Request) {
       focus,
       sleep,
       obstacles,
+      longTermVision,
+      dailyRoutine,
+      specificStruggles,
     });
 
     // --- NEW: Update Cookie to unlock Dashboard ---

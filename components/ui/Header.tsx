@@ -79,7 +79,7 @@ export default function Header() {
         }}
         animate={hideHeader ? "hidden" : "visible"}
         transition={{ duration: 0.35, ease: "easeInOut" }}
-        className="bg-primary border-b-[3px] border-black h-16 md:h-20 px-4 md:px-8 flex items-center justify-between shadow-[0px_4px_0px_0px_rgba(0,0,0,0.1)] w-full fixed top-0 left-0 z-40"
+        className="bg-white border-b-[3px] border-black h-16 md:h-20 px-4 md:px-8 flex items-center justify-between shadow-[0px_4px_0px_0px_rgba(0,0,0,0.1)] w-full fixed top-0 left-0 z-40"
       >
         {/* LEFT: Logo & Brand Name */}
         <button

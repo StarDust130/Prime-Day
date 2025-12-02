@@ -61,6 +61,27 @@ const questions = [
       { id: "fatigue", label: "Low Energy", icon: <Moon /> },
     ],
   },
+  {
+    id: "longTermVision",
+    title: "What is your long-term vision?",
+    subtitle: "Where do you see yourself in 5 years?",
+    type: "textarea",
+    placeholder: "I want to be...",
+  },
+  {
+    id: "dailyRoutine",
+    title: "Describe your current daily routine",
+    subtitle: "Briefly walk us through your day.",
+    type: "textarea",
+    placeholder: "Wake up at 7am...",
+  },
+  {
+    id: "specificStruggles",
+    title: "Any specific struggles?",
+    subtitle: "What's holding you back the most?",
+    type: "textarea",
+    placeholder: "I struggle with...",
+  },
 ];
 
 // --- Components ---
@@ -232,8 +253,14 @@ export default function OnboardingPage() {
     }
   };
 
-  const hasSelection = (answers[currentQ.id]?.length || 0) > 0;
+  const handleTextChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+  ) => {
+    setAnswers({ ...answers, [currentQ.id]: [e.target.value] });
+  };
 
+  const hasSelection =
+    (answers[currentQ.id]?.length || 0) > 0 && answers[currentQ.id]?.[0] !== "";
 
   useEffect(() => {
     if (showProOverlay) {
@@ -250,58 +277,67 @@ export default function OnboardingPage() {
     exit: { x: -30, opacity: 0 },
   };
 
-React.useEffect(() => {
-  const userId = localStorage.getItem("primeDayUserId");
-  const hasOnboarded = localStorage.getItem("primeDayHasOnboarded");
+  React.useEffect(() => {
+    const userId = localStorage.getItem("primeDayUserId");
+    const hasOnboarded = localStorage.getItem("primeDayHasOnboarded");
 
-  // 1. If not logged in -> Go to Auth
-  if (!userId) {
-    router.replace("/auth");
-    return;
-  }
-
-  // 2. If already onboarded -> Go to Dashboard
-  if (hasOnboarded === "true") {
-    router.replace("/dashboard");
-    return;
-  }
-}, [router]);
-
-const saveOnboardingData = async () => {
-  try {
-    const userId = localStorage.getItem("primeDayUserId"); // Or get from cookie if you prefer, but localstorage is fine here
-
+    // 1. If not logged in -> Go to Auth
     if (!userId) {
-      console.error("No user ID found! Redirecting...");
-      router.push("/auth");
+      router.replace("/auth");
       return;
     }
 
-    // --- FIX: DEFINE PAYLOAD HERE ---
-    const payload = {
-      userId,
-      focus: answers["focus"],
-      sleep: answers["sleep"] ? answers["sleep"][0] : null, // Handle single select array
-      obstacles: answers["obstacles"],
-    };
-    // -------------------------------
+    // 2. If already onboarded -> Go to Dashboard
+    if (hasOnboarded === "true") {
+      router.replace("/dashboard");
+      return;
+    }
+  }, [router]);
 
-    const res = await fetch("/api/onboarding", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload), // Now payload exists!
-    });
+  const saveOnboardingData = async () => {
+    try {
+      const userId = localStorage.getItem("primeDayUserId"); // Or get from cookie if you prefer, but localstorage is fine here
 
-    if (!res.ok) throw new Error("Failed to save");
+      if (!userId) {
+        console.error("No user ID found! Redirecting...");
+        router.push("/auth");
+        return;
+      }
 
-    // Mark as complete so middleware knows
-    // Note: Middleware checks cookies, but this helps client-side logic if needed
-    localStorage.setItem("primeDayHasOnboarded", "true");
-    console.log("Onboarding saved successfully");
-  } catch (error) {
-    console.error("Save Error:", error);
-  }
-};
+      // --- FIX: DEFINE PAYLOAD HERE ---
+      const payload = {
+        userId,
+        focus: answers["focus"],
+        sleep: answers["sleep"] ? answers["sleep"][0] : null, // Handle single select array
+        obstacles: answers["obstacles"],
+        longTermVision: answers["longTermVision"]
+          ? answers["longTermVision"][0]
+          : null,
+        dailyRoutine: answers["dailyRoutine"]
+          ? answers["dailyRoutine"][0]
+          : null,
+        specificStruggles: answers["specificStruggles"]
+          ? answers["specificStruggles"][0]
+          : null,
+      };
+      // -------------------------------
+
+      const res = await fetch("/api/onboarding", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload), // Now payload exists!
+      });
+
+      if (!res.ok) throw new Error("Failed to save");
+
+      // Mark as complete so middleware knows
+      // Note: Middleware checks cookies, but this helps client-side logic if needed
+      localStorage.setItem("primeDayHasOnboarded", "true");
+      console.log("Onboarding saved successfully");
+    } catch (error) {
+      console.error("Save Error:", error);
+    }
+  };
 
   const handleNext = async () => {
     if (step < totalSteps - 1) {
@@ -316,7 +352,7 @@ const saveOnboardingData = async () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#121212] font-sans overflow-hidden relative flex flex-col">
+    <div className="min-h-screen md:max-w-3xl bg-[#F8FAFC] text-[#121212] font-sans overflow-hidden relative flex flex-col">
       {showProOverlay && <ProfessionalOverlay />}
 
       {/* Top bar accent */}
@@ -371,19 +407,29 @@ const saveOnboardingData = async () => {
             </div>
 
             <div className="grid grid-cols-1 gap-4">
-              {currentQ.options.map((opt) => {
-                const isSelected = (answers[currentQ.id] || []).includes(
-                  opt.id
-                );
-                return (
-                  <OptionCard
-                    key={opt.id}
-                    option={opt}
-                    isSelected={isSelected}
-                    onClick={() => handleSelect(opt.id)}
-                  />
-                );
-              })}
+              {currentQ.type === "textarea" ? (
+                <textarea
+                  className="w-full p-4 text-lg border-2 border-black rounded-xl focus:outline-none focus:shadow-[4px_4px_0px_0px_#38BDF8] transition-all min-h-[200px] resize-none"
+                  placeholder={currentQ.placeholder}
+                  value={answers[currentQ.id]?.[0] || ""}
+                  onChange={handleTextChange}
+                  autoFocus
+                />
+              ) : (
+                currentQ.options?.map((opt) => {
+                  const isSelected = (answers[currentQ.id] || []).includes(
+                    opt.id
+                  );
+                  return (
+                    <OptionCard
+                      key={opt.id}
+                      option={opt}
+                      isSelected={isSelected}
+                      onClick={() => handleSelect(opt.id)}
+                    />
+                  );
+                })
+              )}
             </div>
           </motion.div>
         </AnimatePresence>
