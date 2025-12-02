@@ -45,6 +45,7 @@ const CreatePageContent = () => {
   const [loadingAi, setLoadingAi] = useState(false);
   const [aiCategory, setAiCategory] = useState("General");
   const [showAiCategoryDropdown, setShowAiCategoryDropdown] = useState(false);
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
 
   const aiCategories = [
     "General",
