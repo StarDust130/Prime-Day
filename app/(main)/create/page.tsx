@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronLeft,
@@ -18,17 +18,26 @@ import {
   Flame,
   Check,
   Loader2,
+  Smile,
 } from "lucide-react";
+import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 
-const CreatePage = () => {
+const CreatePageContent = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("edit");
+
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(!!editId);
   const [activeTab, setActiveTab] = useState<"habit" | "goal">("habit");
 
   // Form State
   const [name, setName] = useState("");
   const [selectedIcon, setSelectedIcon] = useState("⚡");
+  const [customIcon, setCustomIcon] = useState("");
   const [selectedColor, setSelectedColor] = useState("bg-[#38BDF8]");
+  const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
+  const [showCustomEmoji, setShowCustomEmoji] = useState(false);
 
   const icons = [
     "⚡",
@@ -58,21 +67,56 @@ const CreatePage = () => {
     { bg: "bg-[#121212]", border: "border-[#121212]" }, // Black
   ];
 
+  // Fetch existing habit if editing
+  useEffect(() => {
+    if (editId) {
+      const fetchHabit = async () => {
+        try {
+          const res = await fetch("/api/habits");
+          const data = await res.json();
+          if (data.success) {
+            const habit = data.data.find((h: any) => h._id === editId);
+            if (habit) {
+              setName(habit.name);
+              setSelectedIcon(habit.icon);
+              setSelectedColor(habit.color);
+              setPriority(habit.priority || "medium");
+              if (!icons.includes(habit.icon)) {
+                setShowCustomEmoji(true);
+                setCustomIcon(habit.icon);
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Failed to fetch habit details");
+        } finally {
+          setFetching(false);
+        }
+      };
+      fetchHabit();
+    }
+  }, [editId]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name) return;
 
     setLoading(true);
+    const finalIcon = showCustomEmoji && customIcon ? customIcon : selectedIcon;
 
     try {
       if (activeTab === "habit") {
-        const res = await fetch("/api/habits", {
-          method: "POST",
+        const url = editId ? `/api/habits/${editId}` : "/api/habits";
+        const method = editId ? "PUT" : "POST";
+
+        const res = await fetch(url, {
+          method,
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name,
-            icon: selectedIcon,
+            icon: finalIcon,
             color: selectedColor,
+            priority,
           }),
         });
 
@@ -80,10 +124,9 @@ const CreatePage = () => {
           router.push("/habits");
           router.refresh();
         } else {
-          console.error("Failed to create habit");
+          console.error("Failed to save habit");
         }
       } else {
-        // Goal creation logic would go here
         alert("Goal creation coming soon!");
       }
     } catch (error) {
@@ -92,6 +135,14 @@ const CreatePage = () => {
       setLoading(false);
     }
   };
+
+  if (fetching) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
+        <Loader2 className="w-8 h-8 animate-spin text-[#38BDF8]" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-24 md:p-8 pt-6 px-4 font-sans text-[#121212] overflow-hidden relative">
@@ -111,33 +162,35 @@ const CreatePage = () => {
             <ChevronLeft className="w-6 h-6" />
           </button>
           <h1 className="text-2xl font-black italic tracking-tighter uppercase">
-            Create New
+            {editId ? "Edit Habit" : "Create New"}
           </h1>
         </header>
 
         {/* --- TABS --- */}
-        <div className="flex p-1 bg-gray-200 rounded-xl mb-8">
-          <button
-            onClick={() => setActiveTab("habit")}
-            className={`flex-1 py-3 rounded-lg font-black uppercase tracking-wider text-sm transition-all ${
-              activeTab === "habit"
-                ? "bg-white shadow-sm text-black"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Habit
-          </button>
-          <button
-            onClick={() => setActiveTab("goal")}
-            className={`flex-1 py-3 rounded-lg font-black uppercase tracking-wider text-sm transition-all ${
-              activeTab === "goal"
-                ? "bg-white shadow-sm text-black"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            Goal
-          </button>
-        </div>
+        {!editId && (
+          <div className="flex p-1 bg-gray-200 rounded-xl mb-8">
+            <button
+              onClick={() => setActiveTab("habit")}
+              className={`flex-1 py-3 rounded-lg font-black uppercase tracking-wider text-sm transition-all ${
+                activeTab === "habit"
+                  ? "bg-white shadow-sm text-black"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Habit
+            </button>
+            <button
+              onClick={() => setActiveTab("goal")}
+              className={`flex-1 py-3 rounded-lg font-black uppercase tracking-wider text-sm transition-all ${
+                activeTab === "goal"
+                  ? "bg-white shadow-sm text-black"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Goal
+            </button>
+          </div>
+        )}
 
         <AnimatePresence mode="wait">
           <motion.form
@@ -167,30 +220,84 @@ const CreatePage = () => {
               />
             </div>
 
-            {/* --- ICON PICKER --- */}
+            {/* --- PRIORITY --- */}
             <div className="space-y-3">
               <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                Choose Icon
+                Priority
               </label>
-              <div className="grid grid-cols-5 gap-3">
-                {icons.map((icon) => (
+              <div className="flex gap-2">
+                {(["low", "medium", "high"] as const).map((p) => (
                   <button
-                    key={icon}
+                    key={p}
                     type="button"
-                    onClick={() => setSelectedIcon(icon)}
+                    onClick={() => setPriority(p)}
                     className={`
-                      aspect-square rounded-xl flex items-center justify-center text-2xl border-2 transition-all
+                      flex-1 py-3 rounded-xl font-bold uppercase text-xs border-2 transition-all
                       ${
-                        selectedIcon === icon
-                          ? "bg-black border-black text-white shadow-[2px_2px_0px_0px_#38BDF8] -translate-y-1"
-                          : "bg-white border-gray-200 hover:border-black hover:bg-gray-50"
+                        priority === p
+                          ? "bg-black text-white border-black shadow-[2px_2px_0px_0px_#38BDF8] -translate-y-1"
+                          : "bg-white text-gray-500 border-gray-200 hover:border-black"
                       }
                     `}
                   >
-                    {icon}
+                    {p}
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* --- ICON PICKER --- */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                  Choose Icon
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowCustomEmoji(!showCustomEmoji)}
+                  className="text-xs font-bold text-[#38BDF8] uppercase tracking-widest hover:underline flex items-center gap-1"
+                >
+                  <Smile className="w-3 h-3" />
+                  {showCustomEmoji ? "Pick from list" : "Custom Emoji"}
+                </button>
+              </div>
+
+              {showCustomEmoji ? (
+                <div className="flex justify-center w-full">
+                  <div className="w-full border-2 border-black rounded-xl overflow-hidden shadow-[4px_4px_0px_0px_#000]">
+                    <EmojiPicker
+                      onEmojiClick={(emojiData: EmojiClickData) => {
+                        setCustomIcon(emojiData.emoji);
+                        setSelectedIcon(emojiData.emoji);
+                      }}
+                      width="100%"
+                      height={350}
+                      previewConfig={{ showPreview: false }}
+                      skinTonesDisabled
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-5 gap-3">
+                  {icons.map((icon) => (
+                    <button
+                      key={icon}
+                      type="button"
+                      onClick={() => setSelectedIcon(icon)}
+                      className={`
+                        aspect-square rounded-xl flex items-center justify-center text-2xl border-2 transition-all
+                        ${
+                          selectedIcon === icon
+                            ? "bg-black border-black text-white shadow-[2px_2px_0px_0px_#38BDF8] -translate-y-1"
+                            : "bg-white border-gray-200 hover:border-black hover:bg-gray-50"
+                        }
+                      `}
+                    >
+                      {icon}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* --- COLOR PICKER --- */}
@@ -231,17 +338,30 @@ const CreatePage = () => {
                 <div
                   className={`w-14 h-14 rounded-lg border-2 border-black flex items-center justify-center text-2xl bg-white`}
                 >
-                  {selectedIcon}
+                  {showCustomEmoji && customIcon ? customIcon : selectedIcon}
                 </div>
                 <div>
                   <h3 className="text-lg font-black uppercase tracking-tight">
                     {name ||
                       (activeTab === "habit" ? "Habit Name" : "Goal Title")}
                   </h3>
-                  <div className="flex items-center gap-1 mt-1">
-                    <Flame className="w-3 h-3 text-orange-500 fill-orange-500" />
-                    <span className="text-xs font-bold text-gray-500">
-                      0 Day Streak
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="flex items-center gap-1">
+                      <Flame className="w-3 h-3 text-orange-500 fill-orange-500" />
+                      <span className="text-xs font-bold text-gray-500">
+                        0 Day Streak
+                      </span>
+                    </div>
+                    <span
+                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded border border-black/10 uppercase ${
+                        priority === "high"
+                          ? "bg-red-100 text-red-700"
+                          : priority === "medium"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-green-100 text-green-700"
+                      }`}
+                    >
+                      {priority}
                     </span>
                   </div>
                 </div>
@@ -262,7 +382,7 @@ const CreatePage = () => {
               ) : (
                 <>
                   <Check className="w-6 h-6" />
-                  <span>Create {activeTab}</span>
+                  <span>{editId ? "Save Changes" : `Create ${activeTab}`}</span>
                 </>
               )}
             </button>
@@ -270,6 +390,14 @@ const CreatePage = () => {
         </AnimatePresence>
       </div>
     </div>
+  );
+};
+
+const CreatePage = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CreatePageContent />
+    </Suspense>
   );
 };
 

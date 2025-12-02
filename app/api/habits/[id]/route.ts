@@ -41,7 +41,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await req.json();
-    const { name, icon, color } = body;
+    const { name, icon, color, priority } = body;
 
     const cookieStore = await cookies();
     const userCookie = cookieStore.get("prime_user");
@@ -55,7 +55,7 @@ export async function PUT(
 
     const updatedHabit = await Habit.findOneAndUpdate(
       { _id: id, userId },
-      { name, icon, color },
+      { name, icon, color, priority },
       { new: true }
     );
 

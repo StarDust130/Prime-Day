@@ -13,10 +13,19 @@ import {
   Eye,
   EyeOff,
   Trash2,
+  Edit,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Habit {
   _id: string;
@@ -24,6 +33,7 @@ interface Habit {
   name: string;
   icon: string;
   color: string;
+  priority?: "low" | "medium" | "high";
   completedDates: string[];
   streak: number;
 }
@@ -57,6 +67,8 @@ const HabitsPage = () => {
   const [hideCompleted, setHideCompleted] = useState(false);
   const [habits, setHabits] = useState<Habit[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteHabitId, setDeleteHabitId] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   // Fetch Habits
   const fetchHabits = async () => {
@@ -77,15 +89,21 @@ const HabitsPage = () => {
     fetchHabits();
   }, []);
 
-  // Delete Habit
-  const deleteHabit = async (habitId: string) => {
-    if (!confirm("Are you sure you want to delete this habit?")) return;
+  // Delete Habit Logic
+  const handleDeleteClick = (habitId: string) => {
+    setDeleteHabitId(habitId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteHabitId) return;
 
     // Optimistic update
-    setHabits((prev) => prev.filter((h) => h._id !== habitId));
+    setHabits((prev) => prev.filter((h) => h._id !== deleteHabitId));
+    setIsDeleteDialogOpen(false);
 
     try {
-      const res = await fetch(`/api/habits/${habitId}`, {
+      const res = await fetch(`/api/habits/${deleteHabitId}`, {
         method: "DELETE",
       });
       if (!res.ok) {
@@ -95,6 +113,7 @@ const HabitsPage = () => {
       console.error("Failed to delete habit", error);
       fetchHabits();
     }
+    setDeleteHabitId(null);
   };
 
   // Check if a habit is completed on a specific date
@@ -392,15 +411,22 @@ const HabitsPage = () => {
                               >
                                 {habit.name}
                               </h3>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  deleteHabit(habit._id);
-                                }}
-                                className="p-2 text-gray-300 hover:text-red-500 transition-colors"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
+                              <div className="flex gap-1">
+                                <Link href={`/create?edit=${habit._id}`}>
+                                  <button className="p-2 text-gray-300 hover:text-blue-500 transition-colors">
+                                    <Edit className="w-4 h-4" />
+                                  </button>
+                                </Link>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteClick(habit._id);
+                                  }}
+                                  className="p-2 text-gray-300 hover:text-red-500 transition-colors"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
                             </div>
                             <div className="flex items-center gap-1 mt-1">
                               <Flame
@@ -413,6 +439,19 @@ const HabitsPage = () => {
                               <span className="text-xs font-bold text-gray-500">
                                 {habit.streak} Day Streak
                               </span>
+                              {habit.priority && (
+                                <span
+                                  className={`ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded border border-black/10 uppercase ${
+                                    habit.priority === "high"
+                                      ? "bg-red-100 text-red-700"
+                                      : habit.priority === "medium"
+                                      ? "bg-yellow-100 text-yellow-700"
+                                      : "bg-green-100 text-green-700"
+                                  }`}
+                                >
+                                  {habit.priority}
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -494,19 +533,41 @@ const HabitsPage = () => {
                               <h3 className="font-black uppercase text-lg tracking-tight leading-none">
                                 {habit.name}
                               </h3>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  deleteHabit(habit._id);
-                                }}
-                                className="p-1 text-gray-300 hover:text-red-500 transition-colors mr-4"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
+                              <div className="flex gap-1 mr-4">
+                                <Link href={`/create?edit=${habit._id}`}>
+                                  <button className="p-1 text-gray-300 hover:text-blue-500 transition-colors">
+                                    <Edit className="w-4 h-4" />
+                                  </button>
+                                </Link>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteClick(habit._id);
+                                  }}
+                                  className="p-1 text-gray-300 hover:text-red-500 transition-colors"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
                             </div>
-                            <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full inline-block mt-1 border border-gray-200">
-                              {habit.streak} DAY STREAK
-                            </span>
+                            <div className="flex gap-2 mt-1">
+                              <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full inline-block border border-gray-200">
+                                {habit.streak} DAY STREAK
+                              </span>
+                              {habit.priority && (
+                                <span
+                                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full border border-black/10 uppercase ${
+                                    habit.priority === "high"
+                                      ? "bg-red-100 text-red-700"
+                                      : habit.priority === "medium"
+                                      ? "bg-yellow-100 text-yellow-700"
+                                      : "bg-green-100 text-green-700"
+                                  }`}
+                                >
+                                  {habit.priority}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -584,6 +645,35 @@ const HabitsPage = () => {
           </motion.button>
         </Link>
       </div>
+
+      {/* --- DELETE CONFIRMATION DIALOG --- */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="bg-white border-2 border-black shadow-[4px_4px_0px_0px_#000] rounded-2xl sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black uppercase tracking-tight">
+              Delete Habit?
+            </DialogTitle>
+            <DialogDescription className="text-gray-500 font-medium">
+              Are you sure you want to delete this habit? This action cannot be
+              undone and all your streak data will be lost.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 sm:justify-end mt-4">
+            <button
+              onClick={() => setIsDeleteDialogOpen(false)}
+              className="px-4 py-2 rounded-xl font-bold border-2 border-transparent hover:bg-gray-100 transition-colors uppercase text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirmDelete}
+              className="px-4 py-2 rounded-xl font-bold border-2 border-black bg-red-500 text-white shadow-[2px_2px_0px_0px_#000] active:translate-y-[2px] active:shadow-none transition-all uppercase text-sm hover:bg-red-600"
+            >
+              Yes, Delete It
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

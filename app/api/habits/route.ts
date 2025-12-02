@@ -29,7 +29,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, icon, color } = body;
+    const { name, icon, color, priority } = body;
 
     const cookieStore = await cookies();
     const userCookie = cookieStore.get("prime_user");
@@ -46,6 +46,7 @@ export async function POST(req: Request) {
       name,
       icon: icon || "⚡",
       color: color || "bg-[#38BDF8]",
+      priority: priority || "medium",
       completedDates: [],
       streak: 0,
     });
