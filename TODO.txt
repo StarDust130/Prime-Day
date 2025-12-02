@@ -21,7 +21,7 @@
 - Profile: Settings. 👤
 - History: Past data. 📚
 
-#### API Endpoints 🔗
+#### API Endpoints 🔗 (@Archiviste-ken 👴)
 - POST /auth/login 🔐
 - POST /activities 📤
 - GET /summary/{date} 📥
