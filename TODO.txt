@@ -1,41 +1,29 @@
 ### PrimeDay App Development Plan 📅
 
-#### Core Features 🚀
-- Track activities (exercise, work, meals, sleep) with timestamps, duration, notes. ⏱️
-- AI summaries: Analyze logs for daily reports. 🤖
-- Routine suggestions: Personalized tips for habits. 💡
-- Tech: React Native/React frontend, Node.js/Firebase backend, OpenAI for AI. ⚙️
+#### Frontend (Pages) 🌐
+- **Onboarding** /onboarding: Collect goals, wake/sleep times, habits, focus areas. 🎯
+- **Home (Dashboard)** /: Today’s schedule, PrimeScore, tasks, quick actions. 🏠
+- **Habits** /habits: Track habits; /habits/add to add new ones. 📊
+- **Activity Logging** /log: Log gym, meditation, study, work. 📝
+- **AI Coach** /coach: Daily suggestions, weak areas, improvements. 🤖
+- **Stats & Insights** /stats: Graphs for streaks, time, domains, growth. 📈
+- **Goals** /goals: Set long-term goals; AI breaks into tasks. 🎯
+- **Friends/Leaderboard** /friends /leaderboard: Friends, rankings, scores. 🏆
+- **Profile/Settings** /profile: User data, themes, preferences. ⚙️
 
-#### User Flow 🔄
-1. Onboard: Sign up, set goals. 👋
-2. Track: Quick-add activities. ➕
-3. Review: View logs, AI summary. 👀
-4. Routines: Get tips, mark done. ✅
-5. Progress: Dashboard with charts. 📊
+#### Backend (APIs - MongoDB) 🔧
+- **Auth**: POST /api/auth/register, POST /api/auth/login 🔐
+- **User**: GET /api/user/me, PUT /api/user/update 👤
+- **Habits**: GET /api/habits, POST /api/habits, PUT /api/habits/:id, DELETE /api/habits/:id 📋
+- **Habit Tracking**: POST /api/habits/track, GET /api/habits/history 📅
+- **Activities**: POST /api/activity/log, GET /api/activity/today, GET /api/activity/history 🏃
+- **Schedule**: GET /api/schedule/today, POST /api/schedule/update, POST /api/schedule/autoplan 📅
+- **Goals**: GET /api/goals, POST /api/goals, PUT /api/goals/:id, DELETE /api/goals/:id 🎯
+- **PrimeScore**: GET /api/primescore, POST /api/primescore/update 🏆
+- **Stats**: GET /api/stats 📊
+- **Friends/Leaderboard**: POST /api/friends/add, GET /api/friends/list, GET /api/leaderboard 👥
+- **AI Coach (Groq Llama)**: POST /api/ai/coach, POST /api/ai/autoplan, POST /api/ai/analysis 🤖
 
-#### Pages 📱
-- Home: Logs, quick-add, summary. 🏠
-- Log Activity: Add/edit form. ✏️
-- Summary: AI report. 📋
-- Routines: Suggestions list. 📝
-- Profile: Settings. 👤
-- History: Past data. 📚
-
-#### API Endpoints 🔗 (@Archiviste-ken 👴)
-- POST /auth/login 🔐
-- POST /activities 📤
-- GET /summary/{date} 📥
-- GET /routines/{userId} 📥
-- POST /ai/summarize 🤖
-- PUT /routines/{id}/complete ✅
-
-#### Steps 🛠️
-- Phase 1: Build tracking with mock summaries. 🏗️
-- Phase 2: Add AI. 🧠
-- Phase 3: Notifications, analytics. 🔔
-- Test, deploy. 🚀
-
-#### Notes 📝
-- Privacy: Secure data. 🔒
-- Monetize: Premium AI. 💰
-- Timeline: 2-3 months. ⏳
+#### Summary 🚀
+- Frontend: 9 pages for MVP.
+- Backend: ~22 REST APIs.
