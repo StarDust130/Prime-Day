@@ -280,6 +280,7 @@ export default function FriendsPage() {
                       alt="No friends"
                       fill
                       className="object-contain opacity-80"
+                      priority
                     />
                   </div>
                   <h3 className="text-xl font-black uppercase mb-2 text-gray-800">
