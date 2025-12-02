@@ -14,6 +14,7 @@ import {
   Sparkles,
   ArrowLeft,
 } from "lucide-react";
+import Loading from "@/app/loading";
 
 export default function AccountPage() {
   const [user, setUser] = useState<{
@@ -46,7 +47,7 @@ export default function AccountPage() {
     } catch (error) {
       console.error("Error fetching account:", error);
     } finally {
-      setLoading(false);
+      // setLoading(false);
     }
   };
 
@@ -83,14 +84,6 @@ export default function AccountPage() {
       setSaving(false);
     }
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#38BDF8]" />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-24 md:p-8 pt-6 px-4 font-sans text-[#121212] overflow-hidden relative">
