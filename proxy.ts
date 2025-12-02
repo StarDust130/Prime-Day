@@ -20,7 +20,12 @@ export function proxy(request: NextRequest) {
   if (!isLoggedIn) {
     if (
       pathname.startsWith("/dashboard") ||
-      pathname.startsWith("/onboarding")
+      pathname.startsWith("/onboarding") ||
+      pathname.startsWith("/habits") ||
+      pathname.startsWith("/accounts")  ||
+      pathname.startsWith("/friends") ||
+      pathname.startsWith("/stats") ||
+      pathname.startsWith("/goals")
     ) {
       return NextResponse.redirect(new URL("/", request.url));
     }
