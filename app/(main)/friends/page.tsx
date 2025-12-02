@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Users,
   UserPlus,
@@ -11,13 +9,13 @@ import {
   Trophy,
   Loader2,
   Check,
-  X,
   Clock,
-  Send,
-  ArrowRight,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import MascotLoading from "@/components/ui/MascotLoading";
 
 interface Friend {
   _id: string;
@@ -46,7 +44,7 @@ interface FriendRequest {
 }
 
 export default function FriendsPage() {
-  const router = useRouter();
+  // const router = useRouter();
   const [activeTab, setActiveTab] = useState<"friends" | "search" | "requests">(
     "friends"
   );
@@ -247,9 +245,7 @@ export default function FriendsPage() {
               className="space-y-4"
             >
               {loading ? (
-                <div className="flex justify-center py-12">
-                  <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
-                </div>
+                <MascotLoading />
               ) : friends.length > 0 ? (
                 friends.map((friend) => (
                   <div
@@ -277,12 +273,19 @@ export default function FriendsPage() {
                   </div>
                 ))
               ) : (
-                <div className="text-center py-12 flex flex-col items-center">
-                  <div className="bg-gray-100 w-20 h-20 rounded-full flex items-center justify-center mb-4 border-2 border-black">
-                    <Users className="w-10 h-10 text-gray-400" />
+                <div className="flex flex-col items-center justify-center py-12 text-center bg-white/50 backdrop-blur-sm border-2 border-dashed border-gray-300 rounded-2xl">
+                  <div className="relative w-48 h-48 mb-4">
+                    <Image
+                      src="/anime-girl-6.png"
+                      alt="No friends"
+                      fill
+                      className="object-contain opacity-80"
+                    />
                   </div>
-                  <h3 className="font-bold text-xl mb-2">No friends yet</h3>
-                  <p className="text-gray-500 text-sm mb-6 max-w-xs">
+                  <h3 className="text-xl font-black uppercase mb-2 text-gray-800">
+                    No Friends Yet
+                  </h3>
+                  <p className="text-gray-500 font-medium max-w-xs mx-auto mb-6">
                     Connect with your friends to track habits together and stay
                     motivated!
                   </p>
@@ -296,7 +299,6 @@ export default function FriendsPage() {
               )}
             </motion.div>
           )}
-
           {/* --- REQUESTS TAB --- */}
           {activeTab === "requests" && (
             <motion.div
@@ -307,9 +309,7 @@ export default function FriendsPage() {
               className="space-y-8"
             >
               {loading ? (
-                <div className="flex justify-center py-12">
-                  <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
-                </div>
+                <MascotLoading />
               ) : (
                 <>
                   {/* Incoming Requests */}
@@ -371,7 +371,15 @@ export default function FriendsPage() {
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center py-8 bg-white border-2 border-dashed border-gray-300 rounded-xl">
+                      <div className="flex flex-col items-center justify-center py-8 text-center bg-white/50 backdrop-blur-sm border-2 border-dashed border-gray-300 rounded-xl">
+                        <div className="relative w-32 h-32 mb-2">
+                          <Image
+                            src="/anime-girl-7.png"
+                            alt="No requests"
+                            fill
+                            className="object-contain opacity-80"
+                          />
+                        </div>
                         <p className="text-gray-400 text-sm font-medium">
                           No new requests
                         </p>
@@ -425,7 +433,15 @@ export default function FriendsPage() {
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center py-8 bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl">
+                      <div className="flex flex-col items-center justify-center py-8 text-center bg-gray-50/50 backdrop-blur-sm border-2 border-dashed border-gray-200 rounded-xl">
+                        <div className="relative w-32 h-32 mb-2">
+                          <Image
+                            src="/anime-girl.png"
+                            alt="No sent requests"
+                            fill
+                            className="object-contain opacity-60"
+                          />
+                        </div>
                         <p className="text-gray-400 text-sm font-medium">
                           No sent requests
                         </p>
@@ -435,8 +451,7 @@ export default function FriendsPage() {
                 </>
               )}
             </motion.div>
-          )}
-
+          )}{" "}
           {/* --- SEARCH TAB --- */}
           {activeTab === "search" && (
             <motion.div
@@ -451,16 +466,16 @@ export default function FriendsPage() {
                 <Input
                   placeholder="Search by username..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setSearchQuery(e.target.value)
+                  }
                   className="pl-12 h-14 bg-white border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-lg font-medium"
                 />
               </div>
 
               <div className="space-y-3">
                 {searching ? (
-                  <div className="flex justify-center py-8">
-                    <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
-                  </div>
+                  <MascotLoading />
                 ) : searchResults.length > 0 ? (
                   searchResults.map((user) => (
                     <div
@@ -526,7 +541,7 @@ export default function FriendsPage() {
                     <div className="bg-gray-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-gray-200">
                       <Search className="w-8 h-8 text-gray-400" />
                     </div>
-                    <p>No users found matching "{searchQuery}"</p>
+                    <p>No users found matching &quot;{searchQuery}&quot;</p>
                   </div>
                 ) : (
                   <div className="text-center py-12 text-gray-400 text-sm">
