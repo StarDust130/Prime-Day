@@ -12,9 +12,11 @@ import {
   List,
   Eye,
   EyeOff,
+  Trash2,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 
 interface Habit {
   _id: string;
@@ -74,6 +76,26 @@ const HabitsPage = () => {
   useEffect(() => {
     fetchHabits();
   }, []);
+
+  // Delete Habit
+  const deleteHabit = async (habitId: string) => {
+    if (!confirm("Are you sure you want to delete this habit?")) return;
+
+    // Optimistic update
+    setHabits((prev) => prev.filter((h) => h._id !== habitId));
+
+    try {
+      const res = await fetch(`/api/habits/${habitId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        fetchHabits(); // Revert if failed
+      }
+    } catch (error) {
+      console.error("Failed to delete habit", error);
+      fetchHabits();
+    }
+  };
 
   // Check if a habit is completed on a specific date
   const isHabitCompleted = (habit: Habit, date: Date) => {
@@ -351,7 +373,7 @@ const HabitsPage = () => {
                                 `}
                       >
                         {/* Left: Info */}
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-4 flex-1">
                           <div
                             className={`w-14 h-14 rounded-lg border-2 border-black flex items-center justify-center text-2xl ${
                               isCompleted ? "bg-gray-200 grayscale" : "bg-white"
@@ -359,16 +381,27 @@ const HabitsPage = () => {
                           >
                             {habit.icon}
                           </div>
-                          <div>
-                            <h3
-                              className={`text-lg font-black uppercase tracking-tight ${
-                                isCompleted
-                                  ? "text-gray-400 line-through decoration-2"
-                                  : "text-black"
-                              }`}
-                            >
-                              {habit.name}
-                            </h3>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mr-4">
+                              <h3
+                                className={`text-lg font-black uppercase tracking-tight ${
+                                  isCompleted
+                                    ? "text-gray-400 line-through decoration-2"
+                                    : "text-black"
+                                }`}
+                              >
+                                {habit.name}
+                              </h3>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteHabit(habit._id);
+                                }}
+                                className="p-2 text-gray-300 hover:text-red-500 transition-colors"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                             <div className="flex items-center gap-1 mt-1">
                               <Flame
                                 className={`w-3 h-3 ${
@@ -452,14 +485,25 @@ const HabitsPage = () => {
                       />
 
                       <div className="flex justify-between items-start mb-6 pr-8">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 w-full">
                           <span className="text-2xl bg-gray-50 border-2 border-black rounded-md w-10 h-10 flex items-center justify-center shadow-sm">
                             {habit.icon}
                           </span>
-                          <div>
-                            <h3 className="font-black uppercase text-lg tracking-tight leading-none">
-                              {habit.name}
-                            </h3>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <h3 className="font-black uppercase text-lg tracking-tight leading-none">
+                                {habit.name}
+                              </h3>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteHabit(habit._id);
+                                }}
+                                className="p-1 text-gray-300 hover:text-red-500 transition-colors mr-4"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                             <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full inline-block mt-1 border border-gray-200">
                               {habit.streak} DAY STREAK
                             </span>
@@ -530,13 +574,15 @@ const HabitsPage = () => {
         </div>
 
         {/* --- ADD BUTTON --- */}
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          className="w-full mt-8 bg-[#121212] text-white rounded-xl p-5 font-black uppercase tracking-widest border-2 border-transparent hover:border-black hover:bg-[#2a2a2a] shadow-[4px_4px_0px_0px_#38BDF8] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center gap-3"
-        >
-          <Plus className="w-6 h-6" />
-          <span>Add New Habit</span>
-        </motion.button>
+        <Link href="/create">
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            className="w-full mt-8 bg-[#121212] text-white rounded-xl p-5 font-black uppercase tracking-widest border-2 border-transparent hover:border-black hover:bg-[#2a2a2a] shadow-[4px_4px_0px_0px_#38BDF8] active:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center gap-3"
+          >
+            <Plus className="w-6 h-6" />
+            <span>Add New Habit</span>
+          </motion.button>
+        </Link>
       </div>
     </div>
   );

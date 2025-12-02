@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Home, ListTodo, Plus, Target, User } from "lucide-react";
+import { Home, ListTodo, Plus, Goal, Telescope } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function BottomNav() {
@@ -44,8 +44,12 @@ export default function BottomNav() {
       path: "/habits",
       icon: <ListTodo className="w-5 h-5" />,
     },
-    { label: "Goals", path: "/goals", icon: <Target className="w-5 h-5" /> },
-    { label: "Profile", path: "/account", icon: <User className="w-5 h-5" /> },
+    { label: "Goals", path: "/goals", icon: <Goal className="w-5 h-5" /> },
+    {
+      label: "More",
+      path: "/more",
+      icon: <Telescope className="w-5 h-5" />,
+    },
   ];
 
   const createAction = {
