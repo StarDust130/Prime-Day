@@ -1,11 +1,19 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Home, ListTodo, Plus, Goal, Telescope, Users } from "lucide-react";
+import { Home, ListTodo, Plus, Telescope, Users, type LucideIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { usePathname, useRouter } from "next/navigation";
+
+type NavItem = {
+  label: string;
+  path: string;
+  icon: LucideIcon;
+};
 
 export default function BottomNav() {
-  const [pathname, setPathname] = useState("");
+  const pathname = usePathname();
+  const router = useRouter();
   const [isVisible, setIsVisible] = useState(true);
   const [pendingCount, setPendingCount] = useState(0);
   const lastScrollY = useRef(0);
@@ -25,18 +33,10 @@ export default function BottomNav() {
       }
     };
 
-    if (!["/", "/auth", "/onboarding"].includes(window.location.pathname)) {
+    if (!["/", "/auth", "/onboarding"].includes(pathname || "")) {
       fetchPendingRequests();
     }
   }, [pathname]);
-
-  useEffect(() => {
-    setPathname(window.location.pathname);
-
-    const handleLocationChange = () => setPathname(window.location.pathname);
-    window.addEventListener("popstate", handleLocationChange);
-    return () => window.removeEventListener("popstate", handleLocationChange);
-  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -55,35 +55,35 @@ export default function BottomNav() {
   }, []);
 
   const handleNavigation = (path: string) => {
-    window.location.assign(path);
+    router.push(path);
   };
 
-  const navItems = [
-    { label: "Home", path: "/dashboard", icon: <Home className="w-5 h-5" /> },
+  const navItems: NavItem[] = [
+    { label: "Home", path: "/dashboard", icon: Home },
     {
       label: "Habits",
       path: "/habits",
-      icon: <ListTodo className="w-5 h-5" />,
+      icon: ListTodo,
     },
     {
       label: "Friends",
       path: "/friends",
-      icon: <Users className="w-5 h-5" />,
+      icon: Users,
     },
     {
       label: "More",
       path: "/more",
-      icon: <Telescope className="w-5 h-5" />,
+      icon: Telescope,
     },
   ];
 
   const createAction = {
     label: "Create",
     path: "/create",
-    icon: <Plus className="w-7 h-7" />,
+    icon: Plus,
   };
 
-  if (["/", "/auth", "/onboarding"].includes(pathname)) return null;
+  if (["/", "/auth", "/onboarding"].includes(pathname || "")) return null;
 
   return (
     <AnimatePresence>
@@ -100,6 +100,7 @@ export default function BottomNav() {
             <div className="pointer-events-auto flex-1 bg-white border-2 border-black rounded-2xl h-16 px-6 flex items-center justify-between shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               {navItems.map((item) => {
                 const isActive = pathname === item.path;
+                const Icon = item.icon;
 
                 return (
                   <motion.button
@@ -129,9 +130,7 @@ export default function BottomNav() {
                           : "text-gray-400 group-hover:text-black"
                       }`}
                     >
-                      {React.cloneElement(item.icon as React.ReactElement<any>, {
-                        strokeWidth: isActive ? 2.5 : 2,
-                      })}
+                      <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
 
                       {/* Notification Badge */}
                       {item.label === "Friends" && pendingCount > 0 && (
@@ -151,7 +150,9 @@ export default function BottomNav() {
                 onClick={() => handleNavigation(createAction.path)}
                 className="w-16 h-16 bg-[#38BDF8] border-2 border-black rounded-2xl flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black transition-colors hover:bg-[#7dd3fc]"
               >
-                <span className="drop-shadow-sm">{createAction.icon}</span>
+                <span className="drop-shadow-sm">
+                  <createAction.icon className="w-7 h-7" strokeWidth={2.5} />
+                </span>
               </motion.button>
             </div>
           </div>
