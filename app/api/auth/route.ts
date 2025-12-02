@@ -4,16 +4,17 @@ import User from "../../../lib/models/User";
 import Onboarding from "../../../lib/models/Onboarding";
 import { cookies } from "next/headers"; // Import cookies
 
-
-
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { username, birthday } = body;
+    let { username, birthday } = body;
 
     if (!username || !birthday) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
+
+    // Convert username to lowercase for consistency
+    username = username.toLowerCase();
 
     await connectDB();
 
