@@ -68,7 +68,6 @@ const GoalsPage = () => {
   const filteredGoals =
     filter === "all" ? goals : goals.filter((g) => g.type === filter);
 
-
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-24 md:p-8 pt-6 px-4 font-sans text-[#121212] overflow-hidden relative">
       {/* --- BACKGROUND --- */}
@@ -133,6 +132,7 @@ const GoalsPage = () => {
                 alt="No goals"
                 fill
                 className="object-contain opacity-80"
+                priority
               />
             </div>
             <h3 className="text-xl font-black uppercase mb-2 text-gray-800">
