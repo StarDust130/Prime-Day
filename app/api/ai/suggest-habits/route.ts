@@ -14,15 +14,16 @@ export async function GET(req: Request) {
     }
 
     const { userId } = JSON.parse(userCookie.value);
+    const { searchParams } = new URL(req.url);
+    const category = searchParams.get("category");
 
     await connectDB();
     const onboarding = await Onboarding.findOne({ userId });
 
-    if (!onboarding) {
-      return NextResponse.json({ suggestions: [] });
-    }
+    let prompt = "";
 
-    const prompt = `
+    if (onboarding) {
+      prompt = `
       User Profile:
       - Goals: ${onboarding.focus.join(", ")}
       - Sleep: ${onboarding.sleep}
@@ -30,12 +31,25 @@ export async function GET(req: Request) {
       - Vision: ${onboarding.longTermVision || "Not specified"}
       - Routine: ${onboarding.dailyRoutine || "Not specified"}
       - Struggles: ${onboarding.specificStruggles || "Not specified"}
+      ${category ? `- Focus Category: ${category}` : ""}
 
-      Based on this profile, suggest 3 specific, actionable habits this user should start.
+      Based on this profile${
+        category ? ` and the focus category "${category}"` : ""
+      }, suggest 3 specific, actionable habits this user should start.
       Format the response as a JSON array of objects with 'name' (string) and 'icon' (emoji string) properties.
       Example: [{"name": "Drink 2L Water", "icon": "💧"}, ...]
       Do not include any markdown formatting or explanation, just the raw JSON array.
     `;
+    } else {
+      prompt = `
+      Suggest 3 highly effective, general habits for a user who wants to improve their life${
+        category ? ` in the category of "${category}"` : ""
+      }.
+      Format the response as a JSON array of objects with 'name' (string) and 'icon' (emoji string) properties.
+      Example: [{"name": "Drink 2L Water", "icon": "💧"}, ...]
+      Do not include any markdown formatting or explanation, just the raw JSON array.
+      `;
+    }
 
     const response = await getAIResponse(
       prompt,
