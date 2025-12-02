@@ -17,7 +17,7 @@ export async function GET(req: Request) {
     const { userId } = JSON.parse(userCookie.value);
     await connectDB();
 
-    const user = await User.findById(userId).select("name email");
+    const user = await User.findById(userId).select("username email");
     const habits = await Habit.find({ userId });
     const goals = await Goal.find({ userId });
 
