@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import MascotLoading from "@/components/ui/MascotLoading";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -28,6 +29,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import Loading from "@/app/loading";
 
 interface Habit {
   _id: string;
@@ -201,11 +203,7 @@ const HabitsPage = () => {
     totalHabits === 0 ? 0 : Math.round((completedToday / totalHabits) * 100);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#38BDF8]"></div>
-      </div>
-    );
+    return <MascotLoading />;
   }
 
   return (
