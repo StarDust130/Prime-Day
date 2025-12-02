@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { LogOut, User, X, Zap } from "lucide-react";
+import { LogOut, User, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Header() {
@@ -79,53 +79,56 @@ export default function Header() {
         }}
         animate={hideHeader ? "hidden" : "visible"}
         transition={{ duration: 0.35, ease: "easeInOut" }}
-        className="bg-primary border-b-[3px] border-black h-16 md:h-20 px-4 md:px-6 flex items-center justify-between shadow-[0px_4px_0px_0px_rgba(0,0,0,0.1)] w-full fixed top-0 left-0 z-40"
+        className="bg-primary border-b-[3px] border-black h-16 md:h-20 px-4 md:px-8 flex items-center justify-between shadow-[0px_4px_0px_0px_rgba(0,0,0,0.1)] w-full fixed top-0 left-0 z-40"
       >
-        {/* LEFT: User Profile */}
+        {/* LEFT: Logo & Brand Name */}
         <button
-          onClick={() => navigateTo("/account")}
+          onClick={() => navigateTo("/dashboard")}
           className="flex items-center gap-3 group"
         >
-          <div className="w-10 h-10 rounded-full bg-[#F4B400] border-2 border-black flex items-center justify-center text-black shadow-[2px_2px_0px_0px_#000] group-hover:translate-x-[1px] group-hover:translate-y-[1px] group-hover:shadow-none transition-all">
-            <span className="font-black text-sm">
-              {username?.charAt(0).toUpperCase() || "U"}
+          {/* Logo Image */}
+          <div className="relative w-10 h-10 md:w-12 md:h-12 transition-transform group-hover:scale-110 group-hover:-rotate-3 duration-200 bg-white border-2 border-black rounded-md shadow-[3px_3px_0px_0px_#000] p-1">
+            <img 
+              src="/icon.png" 
+              alt="Logo" 
+              className="w-full h-full object-contain"
+            />
+          </div>
+
+          {/* Brand Text */}
+          <div className="flex flex-col items-start leading-none">
+            <span className="font-black italic tracking-tighter text-xl md:text-2xl text-[#121212] uppercase relative drop-shadow-[2px_2px_0px_#fff]">
+              Prime Day
+              <span className="absolute -bottom-1 left-0 w-full h-[3px] bg-[#E94235] transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300" />
             </span>
           </div>
-          <span className="font-black text-lg md:text-xl text-black tracking-tight group-hover:underline decoration-2 underline-offset-2">
-            {username
-              ? username.charAt(0).toUpperCase() + username.slice(1)
-              : "User"}
-          </span>
         </button>
 
-        {/* RIGHT: Brand & Actions */}
-        <div className="flex items-center gap-4">
-          {/* Brand Text */}
+        {/* RIGHT: Actions (User & Logout) */}
+        <div className="flex items-center gap-3 md:gap-4">
+          
+          {/* User Profile Button */}
           <button
-            onClick={() => navigateTo("/dashboard")}
-            className="flex items-center gap-2 group"
+            onClick={() => navigateTo("/account")}
+            className="flex items-center gap-2 group bg-white border-2 border-black px-3 py-2 shadow-[3px_3px_0px_0px_#000] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all hover:bg-[#F4B400] rounded-md"
+            title="My Account"
           >
-            <div className="flex flex-col items-end leading-none">
-              <span className="font-black italic tracking-tighter text-xl md:text-2xl text-[#121212] uppercase relative">
-                Prime Day
-                <span className="absolute -bottom-1 right-0 w-full h-[3px] bg-[#E94235] transform scale-x-0 group-hover:scale-x-100 transition-transform origin-right duration-300" />
-              </span>
-            </div>
-
-            {/* Mini Logo */}
-            <div className="relative w-8 h-8 hidden md:block">
-              <div className="absolute inset-0 bg-[#38BDF8] border-2 border-black rounded-sm transform rotate-3 group-hover:rotate-0 transition-transform duration-300 shadow-[2px_2px_0px_0px_#000]" />
-              <Zap className="absolute inset-0 m-auto w-4 h-4 text-black z-10" />
-            </div>
+            <User className="w-5 h-5 text-black" />
+            <span className="font-bold text-sm text-black hidden md:block">
+              {username ? username.charAt(0).toUpperCase() + username.slice(1) : "User"}
+            </span>
           </button>
 
-          {/* Logout Trigger */}
+          {/* Logout Button */}
           <button
             onClick={() => setShowLogoutModal(true)}
-            className="w-10 h-10 flex items-center justify-center bg-white border-2 border-black shadow-[3px_3px_0px_0px_#000] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all hover:bg-red-50 group rounded-md ml-2"
+            className="w-10 h-10 md:w-auto md:px-3 md:py-2 flex items-center justify-center gap-2 bg-white border-2 border-black shadow-[3px_3px_0px_0px_#000] active:translate-y-[2px] active:translate-x-[2px] active:shadow-none transition-all hover:bg-red-50 group rounded-md"
             title="Sign Out"
           >
-            <LogOut className="w-4 h-4 text-black group-hover:text-[#E94235] transition-colors" />
+            <LogOut className="w-5 h-5 text-black group-hover:text-[#E94235] transition-colors" />
+            <span className="font-bold text-sm text-black hidden md:block group-hover:text-[#E94235]">
+              Exit
+            </span>
           </button>
         </div>
       </motion.header>
@@ -137,7 +140,7 @@ export default function Header() {
       <AnimatePresence>
         {showLogoutModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Backdrop with Scanline Effect */}
+            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
