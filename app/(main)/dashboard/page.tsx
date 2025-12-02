@@ -17,7 +17,7 @@ import Image from "next/image";
 
 interface DashboardData {
   user: {
-    name: string;
+    username: string;
     email: string;
   };
   stats: {
@@ -76,8 +76,9 @@ const DashboardPage = () => {
       <div className="relative z-10">
         {/* --- HEADER --- */}
         <header className="mb-8">
-          <h1 className="text-3xl font-black italic tracking-tighter uppercase">
-            Hello, {(data.user?.name || "User").split(" ")[0]}
+          <h1 className="text-3xl font-black italic tracking-tighter">
+            Hello,{" "}
+            <span className="capitalize">{data.user?.username || "User"}</span>
           </h1>
           <p className="text-sm font-bold text-gray-400 font-mono tracking-widest mt-1">
             LET'S CRUSH IT TODAY
