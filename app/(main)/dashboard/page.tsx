@@ -14,6 +14,7 @@ import {
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import Loading from "@/app/loading";
 
 interface DashboardData {
   user: {
@@ -51,11 +52,7 @@ const DashboardPage = () => {
   }, []);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#38BDF8]" />
-      </div>
-    );
+    return <Loading />
   }
 
   if (!data) return null;
