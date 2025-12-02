@@ -14,10 +14,12 @@ import {
   EyeOff,
   Trash2,
   Edit,
+  ArrowLeft,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -39,6 +41,7 @@ interface Habit {
 }
 
 const HabitsPage = () => {
+  const router = useRouter();
   const [today, setToday] = useState(new Date());
 
   // Calculate current week dates
@@ -236,13 +239,21 @@ const HabitsPage = () => {
       <div className="relative z-10">
         {/* --- HEADER --- */}
         <header className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-black italic tracking-tighter uppercase flex items-center gap-2">
-              My Rituals
-            </h1>
-            <p className="text-sm font-bold text-gray-400 font-mono tracking-widest mt-1">
-              BUILDING THE PRIME VERSION OF YOU
-            </p>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.back()}
+              className="p-2 rounded-full hover:bg-black/5 md:hidden"
+            >
+              <ArrowLeft className="h-6 w-6" />
+            </button>
+            <div>
+              <h1 className="text-3xl font-black italic tracking-tighter uppercase flex items-center gap-2">
+                My Rituals
+              </h1>
+              <p className="text-sm font-bold text-gray-400 font-mono tracking-widest mt-1">
+                BUILDING THE PRIME VERSION OF YOU
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
