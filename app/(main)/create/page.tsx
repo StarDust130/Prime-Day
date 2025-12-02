@@ -20,6 +20,7 @@ import {
   Loader2,
   Smile,
   Sparkles,
+  ChevronDown,
 } from "lucide-react";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 import Loading from "@/app/loading";
@@ -42,11 +43,25 @@ const CreatePageContent = () => {
   const [showCustomEmoji, setShowCustomEmoji] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState<any[]>([]);
   const [loadingAi, setLoadingAi] = useState(false);
+  const [aiCategory, setAiCategory] = useState("General");
+  const [showAiCategoryDropdown, setShowAiCategoryDropdown] = useState(false);
+
+  const aiCategories = [
+    "General",
+    "Health & Fitness",
+    "Productivity",
+    "Mindfulness",
+    "Learning",
+    "Finance",
+    "Social",
+  ];
 
   const fetchAiSuggestions = async () => {
     setLoadingAi(true);
     try {
-      const res = await fetch("/api/ai/suggest-habits");
+      const res = await fetch(
+        `/api/ai/suggest-habits?category=${encodeURIComponent(aiCategory)}`
+      );
       const json = await res.json();
       if (json.suggestions) {
         setAiSuggestions(json.suggestions);
@@ -241,76 +256,108 @@ const CreatePageContent = () => {
             onSubmit={handleSubmit}
             className="space-y-8"
           >
-            {/* --- AI SUGGESTIONS --- */}
-            {activeTab === "habit" && (
-              <div className="mb-6 p-5 bg-white rounded-2xl border-2 border-black shadow-[4px_4px_0px_0px_#000]">
-                <div className="flex justify-between items-center mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-black rounded-lg text-[#38BDF8]">
-                      <Sparkles className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <span className="block text-xs font-black uppercase tracking-widest text-gray-500">
-                        AI Assistant
-                      </span>
-                      <span className="block text-sm font-bold text-black">
-                        Smart Suggestions
-                      </span>
-                    </div>
-                  </div>
+            {/* --- NAME INPUT --- */}
+            <div className="space-y-3 relative">
+              <div className="flex justify-between items-end">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                  {activeTab === "habit" ? "Habit Name" : "Goal Title"}
+                </label>
+                {activeTab === "habit" && (
                   <button
                     type="button"
-                    onClick={fetchAiSuggestions}
-                    disabled={loadingAi}
-                    className="text-xs font-bold bg-[#38BDF8] border-2 border-black text-black px-4 py-2 rounded-lg shadow-[2px_2px_0px_0px_#000] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_#000] active:translate-y-[0px] active:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    onClick={() =>
+                      setShowAiCategoryDropdown(!showAiCategoryDropdown)
+                    }
+                    className="text-[10px] font-black uppercase tracking-wider bg-black text-[#38BDF8] px-3 py-1 rounded-lg hover:bg-[#38BDF8] hover:text-black transition-colors flex items-center gap-1"
                   >
-                    {loadingAi ? (
-                      <>
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                        Thinking...
-                      </>
-                    ) : (
-                      "Generate Ideas"
-                    )}
+                    <Sparkles className="w-3 h-3" />
+                    AI Suggestion
                   </button>
-                </div>
-
-                {aiSuggestions.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    {aiSuggestions.map((s, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => {
-                          setName(s.name);
-                          setSelectedIcon(s.icon);
-                        }}
-                        className="group relative bg-gray-50 p-3 rounded-xl border-2 border-black text-left transition-all hover:bg-[#38BDF8] hover:shadow-[4px_4px_0px_0px_#000] hover:-translate-y-1"
-                      >
-                        <div className="text-2xl mb-2 bg-white w-10 h-10 flex items-center justify-center rounded-lg border-2 border-black group-hover:scale-110 transition-transform">
-                          {s.icon}
-                        </div>
-                        <div className="text-xs font-black text-black uppercase tracking-wide">
-                          {s.name}
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-4 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                      Tap "Generate" to get personalized habits
-                    </p>
-                  </div>
                 )}
               </div>
-            )}
 
-            {/* --- NAME INPUT --- */}
-            <div className="space-y-3">
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                {activeTab === "habit" ? "Habit Name" : "Goal Title"}
-              </label>
+              {/* AI POPUP CARD */}
+              <AnimatePresence>
+                {showAiCategoryDropdown && activeTab === "habit" && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                    animate={{ opacity: 1, height: "auto", marginBottom: 16 }}
+                    exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                    className="relative w-full bg-white border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_#000] p-4 overflow-hidden"
+                  >
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="text-xs font-black uppercase tracking-widest">
+                        AI Suggestions
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={() => setShowAiCategoryDropdown(false)}
+                        className="text-gray-400 hover:text-black"
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    <div className="flex gap-2 mb-4">
+                      <div className="relative flex-1">
+                        <select
+                          value={aiCategory}
+                          onChange={(e) => setAiCategory(e.target.value)}
+                          className="w-full appearance-none bg-gray-50 border-2 border-black rounded-lg px-3 py-2 text-xs font-bold focus:outline-none"
+                        >
+                          {aiCategories.map((cat) => (
+                            <option key={cat} value={cat}>
+                              {cat}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 pointer-events-none" />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={fetchAiSuggestions}
+                        disabled={loadingAi}
+                        className="bg-[#38BDF8] border-2 border-black rounded-lg px-3 py-2 text-xs font-bold hover:shadow-[2px_2px_0px_0px_#000] active:translate-y-[1px] active:shadow-none transition-all disabled:opacity-50"
+                      >
+                        {loadingAi ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <Zap className="w-3 h-3" />
+                        )}
+                      </button>
+                    </div>
+
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                      {aiSuggestions.length > 0 ? (
+                        aiSuggestions.map((s, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => {
+                              setName(s.name);
+                              setSelectedIcon(s.icon);
+                              setShowAiCategoryDropdown(false);
+                            }}
+                            className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 border-2 border-transparent hover:border-black transition-all text-left group"
+                          >
+                            <span className="text-xl bg-white border-2 border-gray-200 group-hover:border-black rounded-md w-8 h-8 flex items-center justify-center">
+                              {s.icon}
+                            </span>
+                            <span className="text-xs font-bold group-hover:text-[#38BDF8]">
+                              {s.name}
+                            </span>
+                          </button>
+                        ))
+                      ) : (
+                        <div className="text-center py-4 text-gray-400 text-[10px] font-bold uppercase tracking-widest">
+                          Select category & hit zap
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <input
                 type="text"
                 value={name}
