@@ -1,7 +1,8 @@
+import LogoutButton from "@/components/ui/Logout_Button"
 
 const page = () => {
   return (
-    <div>page</div>
+    <div>page <LogoutButton /></div>
   )
 }
 export default page
