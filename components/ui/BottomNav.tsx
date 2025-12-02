@@ -1,13 +1,34 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Home, ListTodo, Plus, Goal, Telescope } from "lucide-react";
+import { Home, ListTodo, Plus, Goal, Telescope, Users } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function BottomNav() {
   const [pathname, setPathname] = useState("");
   const [isVisible, setIsVisible] = useState(true);
+  const [pendingCount, setPendingCount] = useState(0);
   const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const fetchPendingRequests = async () => {
+      try {
+        const res = await fetch("/api/friends/request");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.incoming) {
+            setPendingCount(data.incoming.length);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching pending requests:", error);
+      }
+    };
+
+    if (!["/", "/auth", "/onboarding"].includes(window.location.pathname)) {
+      fetchPendingRequests();
+    }
+  }, [pathname]);
 
   useEffect(() => {
     setPathname(window.location.pathname);
@@ -43,6 +64,11 @@ export default function BottomNav() {
       label: "Habits",
       path: "/habits",
       icon: <ListTodo className="w-5 h-5" />,
+    },
+    {
+      label: "Friends",
+      path: "/friends",
+      icon: <Users className="w-5 h-5" />,
     },
     { label: "Goals", path: "/goals", icon: <Goal className="w-5 h-5" /> },
     {
@@ -107,6 +133,11 @@ export default function BottomNav() {
                       {React.cloneElement(item.icon as React.ReactElement, {
                         strokeWidth: isActive ? 2.5 : 2,
                       })}
+
+                      {/* Notification Badge */}
+                      {item.label === "Friends" && pendingCount > 0 && (
+                        <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full border border-white" />
+                      )}
                     </span>
                   </motion.button>
                 );
