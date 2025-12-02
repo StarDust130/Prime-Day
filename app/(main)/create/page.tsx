@@ -39,6 +39,13 @@ const CreatePageContent = () => {
   const [priority, setPriority] = useState<"low" | "medium" | "high">("medium");
   const [showCustomEmoji, setShowCustomEmoji] = useState(false);
 
+  // Goal State
+  const [description, setDescription] = useState("");
+  const [goalType, setGoalType] = useState<"short" | "medium" | "long">(
+    "short"
+  );
+  const [deadline, setDeadline] = useState("");
+
   const icons = [
     "⚡",
     "💧",
@@ -127,7 +134,25 @@ const CreatePageContent = () => {
           console.error("Failed to save habit");
         }
       } else {
-        alert("Goal creation coming soon!");
+        const res = await fetch("/api/goals", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: name,
+            description,
+            type: goalType,
+            deadline,
+            icon: finalIcon,
+            color: selectedColor,
+          }),
+        });
+
+        if (res.ok) {
+          router.push("/goals");
+          router.refresh();
+        } else {
+          console.error("Failed to create goal");
+        }
       }
     } catch (error) {
       console.error(error);
@@ -220,31 +245,87 @@ const CreatePageContent = () => {
               />
             </div>
 
-            {/* --- PRIORITY --- */}
-            <div className="space-y-3">
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-                Priority
-              </label>
-              <div className="flex gap-2">
-                {(["low", "medium", "high"] as const).map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => setPriority(p)}
-                    className={`
-                      flex-1 py-3 rounded-xl font-bold uppercase text-xs border-2 transition-all
-                      ${
-                        priority === p
-                          ? "bg-black text-white border-black shadow-[2px_2px_0px_0px_#38BDF8] -translate-y-1"
-                          : "bg-white text-gray-500 border-gray-200 hover:border-black"
-                      }
-                    `}
-                  >
-                    {p}
-                  </button>
-                ))}
+            {/* --- GOAL SPECIFIC FIELDS --- */}
+            {activeTab === "goal" && (
+              <>
+                <div className="space-y-3">
+                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                    Description
+                  </label>
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Describe your goal..."
+                    className="w-full bg-white border-2 border-black rounded-xl p-4 font-medium placeholder:text-gray-300 focus:outline-none focus:ring-4 focus:ring-[#38BDF8]/20 transition-all shadow-[4px_4px_0px_0px_#000] resize-none h-24"
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                    Goal Type
+                  </label>
+                  <div className="flex gap-2">
+                    {(["short", "medium", "long"] as const).map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setGoalType(t)}
+                        className={`
+                          flex-1 py-3 rounded-xl font-bold uppercase text-xs border-2 transition-all
+                          ${
+                            goalType === t
+                              ? "bg-black text-white border-black shadow-[2px_2px_0px_0px_#38BDF8] -translate-y-1"
+                              : "bg-white text-gray-500 border-gray-200 hover:border-black"
+                          }
+                        `}
+                      >
+                        {t} Term
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                    Deadline
+                  </label>
+                  <input
+                    type="date"
+                    value={deadline}
+                    onChange={(e) => setDeadline(e.target.value)}
+                    className="w-full bg-white border-2 border-black rounded-xl p-4 font-bold focus:outline-none focus:ring-4 focus:ring-[#38BDF8]/20 transition-all shadow-[4px_4px_0px_0px_#000]"
+                  />
+                </div>
+              </>
+            )}
+
+            {/* --- PRIORITY (HABIT ONLY) --- */}
+            {activeTab === "habit" && (
+              <div className="space-y-3">
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                  Priority
+                </label>
+                <div className="flex gap-2">
+                  {(["low", "medium", "high"] as const).map((p) => (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => setPriority(p)}
+                      className={`
+                        flex-1 py-3 rounded-xl font-bold uppercase text-xs border-2 transition-all
+                        ${
+                          priority === p
+                            ? "bg-black text-white border-black shadow-[2px_2px_0px_0px_#38BDF8] -translate-y-1"
+                            : "bg-white text-gray-500 border-gray-200 hover:border-black"
+                        }
+                      `}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* --- ICON PICKER --- */}
             <div className="space-y-3">

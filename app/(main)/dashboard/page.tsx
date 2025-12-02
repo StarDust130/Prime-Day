@@ -1,70 +1,258 @@
-import Header from "@/components/ui/Header"
+"use client";
 
-const page = () => {
+import React, { useState, useEffect } from "react";
+import {
+  Trophy,
+  Flame,
+  Target,
+  Calendar,
+  ArrowRight,
+  Zap,
+  Activity,
+  Loader2,
+} from "lucide-react";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import Image from "next/image";
+
+interface DashboardData {
+  user: {
+    name: string;
+    email: string;
+  };
+  stats: {
+    activeHabits: number;
+    completedToday: number;
+    activeGoals: number;
+  };
+  upcomingGoals: any[];
+  todaysHabits: any[];
+}
+
+const DashboardPage = () => {
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const res = await fetch("/api/dashboard");
+        const json = await res.json();
+        if (json.success) {
+          setData(json.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch dashboard", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDashboard();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#38BDF8]" />
+      </div>
+    );
+  }
+
+  if (!data) return null;
+
+  const progress =
+    data.stats.activeHabits > 0
+      ? Math.round((data.stats.completedToday / data.stats.activeHabits) * 100)
+      : 0;
+
   return (
-    <div className="min-h-screen  font-sans p-8 flex flex-col gap-8">
-      {/* Top Navigation Area */}
-      <div className="flex justify-between items-center border-b-4 border-black pb-4">
-       
-        <div className="bg-yellow-500 px-6 py-2 font-bold border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all">
-      
-        </div>
+    <div className="min-h-screen bg-[#F8FAFC] pb-24 md:p-8 pt-6 px-4 font-sans text-[#121212] overflow-hidden relative">
+      {/* --- BACKGROUND --- */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-10%] right-[-10%] w-[300px] h-[300px] bg-[#38BDF8]/5 rounded-full blur-[80px]" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[300px] h-[300px] bg-[#F4B400]/5 rounded-full blur-[80px]" />
       </div>
 
-      {/* Main Bauhaus Grid Layout */}
-      <main className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-4 auto-rows-[minmax(100px,auto)]">
-        
-        {/* Large Hero Block - Red */}
-        <div className="md:col-span-8 bg-red-600 p-8 border-4 border-black flex flex-col justify-center items-start shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-          <h1 className="text-6xl font-black text-white uppercase tracking-tighter mb-4">
-            Dashboard
+      <div className="relative z-10">
+        {/* --- HEADER --- */}
+        <header className="mb-8">
+          <h1 className="text-3xl font-black italic tracking-tighter uppercase">
+            Hello, {(data.user?.name || "User").split(" ")[0]}
           </h1>
-          <p className="text-xl text-white font-medium max-w-md">
-            Form follows function. Analyze your metrics in a structured environment.
+          <p className="text-sm font-bold text-gray-400 font-mono tracking-widest mt-1">
+            LET'S CRUSH IT TODAY
           </p>
-        </div>
+        </header>
 
-        {/* Circle Decorative Block - Blue */}
-        <div className="md:col-span-4 bg-blue-600 border-4 border-black flex items-center justify-center relative overflow-hidden shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-           <div className="w-48 h-48 bg-white rounded-full border-4 border-black absolute -right-12 -bottom-12"></div>
-           <span className="text-white font-bold text-2xl relative z-10">Metrics</span>
-        </div>
+        {/* --- MAIN STATS GRID --- */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          {/* Daily Progress */}
+          <div className="col-span-2 bg-[#121212] text-white rounded-2xl p-6 border-2 border-black shadow-[4px_4px_0px_0px_#38BDF8] relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-20 group-hover:opacity-30 transition-opacity">
+              <Activity className="w-24 h-24" />
+            </div>
+            <div className="relative z-10">
+              <h3 className="text-gray-400 font-bold uppercase text-xs tracking-widest mb-2">
+                Daily Focus
+              </h3>
+              <div className="text-5xl font-black mb-1">{progress}%</div>
+              <p className="text-sm font-medium text-gray-400">
+                {data.stats.completedToday} of {data.stats.activeHabits} habits
+                done
+              </p>
+              <div className="w-full bg-gray-800 h-2 rounded-full mt-4 overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  className="h-full bg-[#38BDF8]"
+                />
+              </div>
+            </div>
+          </div>
 
-        {/* Tall Vertical Block - Yellow */}
-        <div className="md:col-span-3 md:row-span-2 bg-yellow-400 border-4 border-black p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between">
-          <div className="w-12 h-12 bg-black rounded-full"></div>
-          <div className="space-y-4">
-            <div className="h-4 bg-black w-full"></div>
-            <div className="h-4 bg-black w-2/3"></div>
-            <div className="h-4 bg-black w-1/2"></div>
+          {/* Active Goals */}
+          <Link href="/goals" className="contents">
+            <div className="bg-white rounded-2xl p-5 border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:translate-y-[-2px] transition-all cursor-pointer">
+              <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center mb-3 border-2 border-black">
+                <Target className="w-5 h-5 text-yellow-600" />
+              </div>
+              <div className="text-3xl font-black">
+                {data.stats.activeGoals}
+              </div>
+              <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                Active Goals
+              </div>
+            </div>
+          </Link>
+
+          {/* Streak (Placeholder) */}
+          <div className="bg-white rounded-2xl p-5 border-2 border-black shadow-[4px_4px_0px_0px_#000] hover:translate-y-[-2px] transition-all">
+            <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mb-3 border-2 border-black">
+              <Flame className="w-5 h-5 text-orange-600" />
+            </div>
+            <div className="text-3xl font-black">
+              {data.todaysHabits.reduce(
+                (acc: number, h: any) => Math.max(acc, h.streak),
+                0
+              )}
+            </div>
+            <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+              Best Streak
+            </div>
           </div>
         </div>
 
-        {/* Content Area - White */}
-        <div className="md:col-span-9 bg-white border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-          <h2 className="text-3xl font-bold mb-6 border-l-8 border-blue-600 pl-4">Recent Activity</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-             {[1, 2, 3].map((i) => (
-               <div key={i} className="border-2 border-black p-4 hover:bg-zinc-100 transition-colors">
-                 <div className="text-sm text-zinc-500 mb-2">Module 0{i}</div>
-                 <div className="font-bold text-lg">Data Point</div>
-               </div>
-             ))}
+        {/* --- UPCOMING GOALS --- */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-black uppercase tracking-tight">
+              Upcoming Goals
+            </h2>
+            <Link
+              href="/goals"
+              className="text-xs font-bold text-[#38BDF8] uppercase tracking-widest hover:underline flex items-center gap-1"
+            >
+              View All <ArrowRight className="w-3 h-3" />
+            </Link>
           </div>
+
+          {data.upcomingGoals.length === 0 ? (
+            <div className="bg-white border-2 border-black rounded-2xl p-8 text-center border-dashed">
+              <p className="text-gray-400 font-bold uppercase text-sm">
+                No upcoming deadlines
+              </p>
+              <Link href="/create?tab=goal">
+                <button className="mt-4 text-xs font-black uppercase bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors">
+                  Set a Goal
+                </button>
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {data.upcomingGoals.map((goal: any) => (
+                <div
+                  key={goal._id}
+                  className="bg-white border-2 border-black rounded-xl p-4 shadow-[2px_2px_0px_0px_#000] flex items-center gap-4"
+                >
+                  <div
+                    className={`w-10 h-10 rounded-lg border-2 border-black flex items-center justify-center text-xl ${goal.color}`}
+                  >
+                    {goal.icon}
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-black uppercase text-sm">
+                      {goal.title}
+                    </h4>
+                    <div className="flex items-center gap-2 text-xs font-bold text-gray-400 mt-0.5">
+                      <Calendar className="w-3 h-3" />
+                      <span>
+                        {new Date(goal.deadline).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="px-2 py-1 rounded border border-black/10 bg-gray-100 text-[10px] font-black uppercase tracking-wider">
+                    {goal.type}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Bottom Strip - Black */}
-        <div className="md:col-span-9 bg-black text-white p-6 flex items-center justify-between shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-           <span className="font-mono">SYSTEM_STATUS: ONLINE</span>
-           <div className="flex gap-2">
-             <div className="w-4 h-4 bg-red-600 rounded-full"></div>
-             <div className="w-4 h-4 bg-yellow-400 rounded-full"></div>
-             <div className="w-4 h-4 bg-blue-600 rounded-full"></div>
-           </div>
-        </div>
+        {/* --- TODAY'S HABITS PREVIEW --- */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-black uppercase tracking-tight">
+              Today's Habits
+            </h2>
+            <Link
+              href="/habits"
+              className="text-xs font-bold text-[#38BDF8] uppercase tracking-widest hover:underline flex items-center gap-1"
+            >
+              Manage <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
 
-      </main>
+          {data.todaysHabits.length === 0 ? (
+            <div className="bg-white border-2 border-black rounded-2xl p-8 text-center border-dashed">
+              <p className="text-gray-400 font-bold uppercase text-sm">
+                No habits for today
+              </p>
+              <Link href="/create">
+                <button className="mt-4 text-xs font-black uppercase bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors">
+                  Create Habit
+                </button>
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-3">
+              {data.todaysHabits.map((habit: any) => (
+                <div
+                  key={habit._id}
+                  className="bg-white border-2 border-black rounded-xl p-4 shadow-[2px_2px_0px_0px_#000] flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gray-50 rounded-lg border-2 border-black flex items-center justify-center text-xl">
+                      {habit.icon}
+                    </div>
+                    <div>
+                      <h4 className="font-black uppercase text-sm">
+                        {habit.name}
+                      </h4>
+                      <div className="flex items-center gap-1 text-xs font-bold text-orange-500">
+                        <Flame className="w-3 h-3 fill-orange-500" />
+                        <span>{habit.streak} Day Streak</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
-  )
-}
-export default page
+  );
+};
+
+export default DashboardPage;
