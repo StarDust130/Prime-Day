@@ -10,6 +10,7 @@ import {
   Zap,
   Activity,
   Loader2,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -33,6 +34,7 @@ interface DashboardData {
 const DashboardPage = () => {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [dailyTip, setDailyTip] = useState("");
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -48,11 +50,25 @@ const DashboardPage = () => {
         setLoading(false);
       }
     };
+
+    const fetchTip = async () => {
+      try {
+        const res = await fetch("/api/ai/daily-tip");
+        const json = await res.json();
+        if (json.tip) {
+          setDailyTip(json.tip);
+        }
+      } catch (error) {
+        console.error("Failed to fetch tip");
+      }
+    };
+
     fetchDashboard();
+    fetchTip();
   }, []);
 
   if (loading) {
-    return <Loading />
+    return <Loading />;
   }
 
   if (!data) return null;
@@ -80,6 +96,28 @@ const DashboardPage = () => {
           <p className="text-sm font-bold text-gray-400 font-mono tracking-widest mt-1">
             LET'S CRUSH IT TODAY
           </p>
+          {dailyTip && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-6"
+            >
+              <div className="relative bg-white border-2 border-black rounded-2xl p-5 shadow-[4px_4px_0px_0px_#000] flex gap-4 items-start hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_#000] transition-all">
+                <div className="bg-black p-3 rounded-xl border-2 border-black flex-none">
+                  <Sparkles className="w-5 h-5 text-[#38BDF8]" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-black uppercase tracking-widest text-gray-500 mb-1 flex items-center gap-2">
+                    Daily AI Insight
+                    <span className="w-2 h-2 rounded-full bg-[#38BDF8] animate-pulse" />
+                  </h3>
+                  <p className="text-sm font-bold text-[#121212] leading-relaxed">
+                    "{dailyTip}"
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          )}
         </header>
 
         {/* --- MAIN STATS GRID --- */}
