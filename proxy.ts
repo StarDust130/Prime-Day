@@ -25,7 +25,8 @@ export function proxy(request: NextRequest) {
       pathname.startsWith("/accounts")  ||
       pathname.startsWith("/friends") ||
       pathname.startsWith("/stats") ||
-      pathname.startsWith("/goals")
+      pathname.startsWith("/goals") ||
+      pathname.startsWith("/create")
     ) {
       return NextResponse.redirect(new URL("/", request.url));
     }
