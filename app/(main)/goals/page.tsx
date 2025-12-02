@@ -10,10 +10,12 @@ import {
   Trash2,
   MoreVertical,
   Flag,
+  ArrowLeft,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 interface Goal {
   _id: string;
@@ -28,6 +30,7 @@ interface Goal {
 }
 
 const GoalsPage = () => {
+  const router = useRouter();
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "short" | "medium" | "long">(
@@ -84,13 +87,21 @@ const GoalsPage = () => {
       <div className="relative z-10">
         {/* --- HEADER --- */}
         <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-black italic tracking-tighter uppercase flex items-center gap-2">
-              My Goals
-            </h1>
-            <p className="text-sm font-bold text-gray-400 font-mono tracking-widest mt-1">
-              VISION BOARD & MILESTONES
-            </p>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.back()}
+              className="p-2 rounded-full hover:bg-black/5 md:hidden"
+            >
+              <ArrowLeft className="h-6 w-6" />
+            </button>
+            <div>
+              <h1 className="text-3xl font-black italic tracking-tighter uppercase flex items-center gap-2">
+                My Goals
+              </h1>
+              <p className="text-sm font-bold text-gray-400 font-mono tracking-widest mt-1">
+                VISION BOARD & MILESTONES
+              </p>
+            </div>
           </div>
 
           <Link href="/create?tab=goal">
