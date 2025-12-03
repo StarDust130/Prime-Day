@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 declare global {
   interface BeforeInstallPromptEvent extends Event {
@@ -14,7 +14,6 @@ declare global {
   }
 }
 
-const PROMPT_KEY = "prime-day-pwa-prompted-v2";
 const INSTALLED_KEY = "prime-day-pwa-installed";
 const FORCE_PROMPT_ALL =
   process.env.NEXT_PUBLIC_INSTALL_PROMPT_ALL?.toLowerCase() === "true";
@@ -23,9 +22,10 @@ const isStandaloneMode = () => {
   if (typeof window === "undefined") {
     return false;
   }
+
   return (
     window.matchMedia?.("(display-mode: standalone)").matches ||
-    // @ts-expect-error - standalone is iOS only
+    // @ts-expect-error iOS only property
     window.navigator.standalone === true
   );
 };
@@ -34,34 +34,36 @@ const InstallPrompt = () => {
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [visible, setVisible] = useState(false);
+  const [previewMode, setPreviewMode] = useState(false);
+  const bypassPromptRef = useRef(false);
 
   useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
 
-    const alreadySeen = localStorage.getItem(PROMPT_KEY) === "1";
-    const alreadyInstalled = localStorage.getItem(INSTALLED_KEY) === "1";
+    const isLocal =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1" ||
+      window.location.hostname === "0.0.0.0";
 
-    if (
-      (alreadySeen && !FORCE_PROMPT_ALL) ||
-      alreadyInstalled ||
-      isStandaloneMode()
-    ) {
+    bypassPromptRef.current = FORCE_PROMPT_ALL || isLocal;
+
+    const alreadyInstalled = localStorage.getItem(INSTALLED_KEY) === "1";
+    if (alreadyInstalled || isStandaloneMode()) {
       return;
+    }
+
+    if (bypassPromptRef.current) {
+      setVisible(true);
+      setPreviewMode(true);
     }
 
     const handleBeforeInstallPrompt = (event: Event) => {
       event.preventDefault();
-      if (localStorage.getItem(PROMPT_KEY) === "1" && !FORCE_PROMPT_ALL) {
-        return;
-      }
-
       setDeferredPrompt(event as BeforeInstallPromptEvent);
+      setPreviewMode(false);
       setVisible(true);
-      if (!FORCE_PROMPT_ALL) {
-        localStorage.setItem(PROMPT_KEY, "1");
-      }
     };
 
     const handleAppInstalled = () => {
@@ -106,75 +108,78 @@ const InstallPrompt = () => {
   const handleClose = useCallback(() => {
     setVisible(false);
     setDeferredPrompt(null);
-    if (typeof window !== "undefined" && !FORCE_PROMPT_ALL) {
-      localStorage.setItem(PROMPT_KEY, "1");
-    }
+    setPreviewMode(false);
   }, []);
 
-  if (!visible || !deferredPrompt) {
+  if (!visible || (!deferredPrompt && !previewMode)) {
     return null;
   }
 
+  const installReady = Boolean(deferredPrompt);
+
   return (
-    <div className="fixed inset-x-0 bottom-5 flex justify-center px-4 pointer-events-none z-50">
-      <div className="relative w-full max-w-md pointer-events-auto overflow-hidden rounded-[28px] border-2 border-black bg-white text-[#0f172a] shadow-[8px_8px_0px_#111827]">
-        <div
-          className="absolute inset-0 bg-gradient-to-br from-[#ffe5f5] via-[#fff9d6] to-[#e0f2ff] opacity-80"
-          aria-hidden
-        />
-        <div
-          className="absolute -top-10 right-0 w-40 h-40 pointer-events-none"
-          aria-hidden
-        >
-          <Image
-            src="/anime-girl-10.png"
-            alt="Prime Day anime mascot"
-            fill
-            sizes="160px"
-            className="object-contain drop-shadow-[0px_8px_16px_rgba(0,0,0,0.2)]"
-            priority
-          />
-        </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 pointer-events-none">
+      <div className="relative w-full max-w-sm pointer-events-auto rounded-3xl border-2 border-black bg-white text-[#0f172a] shadow-[10px_10px_0px_#111827]">
+        <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:18px_18px] opacity-60" />
         <div className="relative z-10 flex flex-col gap-4 p-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-black bg-white shadow-[4px_4px_0px_#000]">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-black bg-white shadow-[3px_3px_0px_#000]">
               <Image
                 src="/icon.png"
                 alt="Prime Day icon"
-                width={44}
-                height={44}
+                width={40}
+                height={40}
                 className="rounded-xl"
                 priority
               />
             </div>
             <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500">
-                Dashboard exclusive
+              <p className="text-[10px] font-black uppercase tracking-[0.35em] text-black">
+                Prime Day
               </p>
               <p className="text-xl font-black tracking-tight">
-                Install Prime Day
+                Install the Prime Day app
               </p>
             </div>
           </div>
-          <p className="text-sm font-semibold text-[#334155] leading-relaxed">
-            Launch the app instantly, track offline progress, and get hype from
-            our anime coach wherever you go.
+
+          <p className="text-xs font-semibold text-black leading-relaxed">
+            Launch faster, stay logged in, and get a more app-like experience by
           </p>
-          <div className="flex flex-col gap-3 sm:flex-row">
+
+          <div className="flex flex-col gap-2 sm:flex-row">
             <button
-              className="flex-1 rounded-2xl border-2 border-black bg-[#ff61d8] py-3 text-sm font-black uppercase tracking-widest text-white shadow-[4px_4px_0px_#000] transition-transform active:translate-y-0.5"
-              onClick={handleInstall}
+              className={`flex-1 rounded-2xl border-2 border-black bg-[#ff61d8] py-2.5 text-xs font-black uppercase tracking-[0.35em] text-white shadow-[3px_3px_0px_#000] transition-transform active:translate-y-0.5 ${
+                installReady ? "" : "cursor-not-allowed opacity-60"
+              }`}
+              onClick={installReady ? handleInstall : undefined}
+              disabled={!installReady}
             >
-              Install now
+              {installReady ? "Install app" : "Use browser menu"}
             </button>
             <button
-              className="flex-1 rounded-2xl border-2 border-black bg-white py-3 text-sm font-black uppercase tracking-widest text-[#0f172a] shadow-[4px_4px_0px_#000] transition-transform active:translate-y-0.5"
+              className="flex-1 rounded-2xl border-2 border-black bg-white py-2.5 text-xs font-black uppercase tracking-[0.35em] text-[#0f172a] shadow-[3px_3px_0px_#000] transition-transform active:translate-y-0.5"
               onClick={handleClose}
             >
-              Maybe later
+              Not now
             </button>
           </div>
+
+          {previewMode && !installReady && (
+            <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-black text-center">
+              Local preview • use “Add to Home Screen”
+            </p>
+          )}
         </div>
+
+        <Image
+          src="/anime-girl-10.png"
+          alt="Prime Day anime mascot"
+          width={140}
+          height={140}
+          className="absolute -top-4 -right-3 w-24 drop-shadow-[0px_8px_16px_rgba(0,0,0,0.25)]"
+          priority
+        />
       </div>
     </div>
   );
