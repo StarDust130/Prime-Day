@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 
 declare global {
@@ -115,24 +116,64 @@ const InstallPrompt = () => {
   }
 
   return (
-    <div className="fixed bottom-5 inset-x-0 flex justify-center md:hidden px-4 pointer-events-none z-50">
-      <div className="w-full max-w-sm pointer-events-auto bg-white border-2 border-black rounded-3xl shadow-[6px_6px_0px_#000] p-4 text-[#121212]">
-        <p className="font-black uppercase tracking-tight text-base mb-3">
-          Install this app for faster access
-        </p>
-        <div className="flex gap-3">
-          <button
-            className="flex-1 bg-[#fffb14] border-2 border-black rounded-2xl py-2 text-sm font-black uppercase tracking-wide shadow-[4px_4px_0px_#000] active:translate-y-0.5"
-            onClick={handleInstall}
-          >
-            Install
-          </button>
-          <button
-            className="flex-1 bg-white border-2 border-black rounded-2xl py-2 text-sm font-black uppercase tracking-wide shadow-[4px_4px_0px_#000] active:translate-y-0.5"
-            onClick={handleClose}
-          >
-            Close
-          </button>
+    <div className="fixed inset-x-0 bottom-5 flex justify-center px-4 pointer-events-none z-50">
+      <div className="relative w-full max-w-md pointer-events-auto overflow-hidden rounded-[28px] border-2 border-black bg-white text-[#0f172a] shadow-[8px_8px_0px_#111827]">
+        <div
+          className="absolute inset-0 bg-gradient-to-br from-[#ffe5f5] via-[#fff9d6] to-[#e0f2ff] opacity-80"
+          aria-hidden
+        />
+        <div
+          className="absolute -top-10 right-0 w-40 h-40 pointer-events-none"
+          aria-hidden
+        >
+          <Image
+            src="/anime-girl-10.png"
+            alt="Prime Day anime mascot"
+            fill
+            sizes="160px"
+            className="object-contain drop-shadow-[0px_8px_16px_rgba(0,0,0,0.2)]"
+            priority
+          />
+        </div>
+        <div className="relative z-10 flex flex-col gap-4 p-5">
+          <div className="flex items-center gap-3">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-black bg-white shadow-[4px_4px_0px_#000]">
+              <Image
+                src="/icon.png"
+                alt="Prime Day icon"
+                width={44}
+                height={44}
+                className="rounded-xl"
+                priority
+              />
+            </div>
+            <div>
+              <p className="text-[11px] font-black uppercase tracking-[0.3em] text-gray-500">
+                Dashboard exclusive
+              </p>
+              <p className="text-xl font-black tracking-tight">
+                Install Prime Day
+              </p>
+            </div>
+          </div>
+          <p className="text-sm font-semibold text-[#334155] leading-relaxed">
+            Launch the app instantly, track offline progress, and get hype from
+            our anime coach wherever you go.
+          </p>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <button
+              className="flex-1 rounded-2xl border-2 border-black bg-[#ff61d8] py-3 text-sm font-black uppercase tracking-widest text-white shadow-[4px_4px_0px_#000] transition-transform active:translate-y-0.5"
+              onClick={handleInstall}
+            >
+              Install now
+            </button>
+            <button
+              className="flex-1 rounded-2xl border-2 border-black bg-white py-3 text-sm font-black uppercase tracking-widest text-[#0f172a] shadow-[4px_4px_0px_#000] transition-transform active:translate-y-0.5"
+              onClick={handleClose}
+            >
+              Maybe later
+            </button>
+          </div>
         </div>
       </div>
     </div>

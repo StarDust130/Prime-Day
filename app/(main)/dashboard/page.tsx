@@ -16,6 +16,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Loading from "@/app/loading";
+import PWAClient from "@/components/pwa/PWAClient";
 
 interface DashboardData {
   user: {
@@ -87,6 +88,7 @@ const DashboardPage = () => {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-24 md:p-8 pt-6 px-4 font-sans text-[#121212] overflow-hidden relative">
+      <PWAClient />
       {/* --- BACKGROUND --- */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-[-10%] right-[-10%] w-[300px] h-[300px] bg-[#38BDF8]/5 rounded-full blur-[80px]" />

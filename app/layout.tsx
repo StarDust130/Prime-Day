@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/lib/theme-provider";
-import PWAClient from "@/components/pwa/PWAClient";
 
 export const metadata: Metadata = {
   title: "Prime Day",
@@ -26,7 +25,6 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <PWAClient />
           {children}
         </ThemeProvider>
       </body>
