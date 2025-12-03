@@ -15,6 +15,7 @@ declare global {
 }
 
 const INSTALLED_KEY = "prime-day-pwa-installed";
+const SESSION_HIDDEN_KEY = "prime-day-pwa-session-hidden";
 const FORCE_PROMPT_ALL =
   process.env.NEXT_PUBLIC_INSTALL_PROMPT_ALL?.toLowerCase() === "true";
 
@@ -50,20 +51,28 @@ const InstallPrompt = () => {
     bypassPromptRef.current = FORCE_PROMPT_ALL || isLocal;
 
     const alreadyInstalled = localStorage.getItem(INSTALLED_KEY) === "1";
-    if (alreadyInstalled || isStandaloneMode()) {
+    const sessionHidden =
+      !bypassPromptRef.current &&
+      window.sessionStorage?.getItem(SESSION_HIDDEN_KEY) === "1";
+
+    if (alreadyInstalled || isStandaloneMode() || sessionHidden) {
       return;
     }
 
-    if (bypassPromptRef.current) {
-      setVisible(true);
-      setPreviewMode(true);
-    }
+    setVisible(true);
+    setPreviewMode(true);
 
     const handleBeforeInstallPrompt = (event: Event) => {
       event.preventDefault();
+      if (
+        !bypassPromptRef.current &&
+        window.sessionStorage?.getItem(SESSION_HIDDEN_KEY) === "1"
+      ) {
+        return;
+      }
+
       setDeferredPrompt(event as BeforeInstallPromptEvent);
       setPreviewMode(false);
-      setVisible(true);
     };
 
     const handleAppInstalled = () => {
@@ -109,6 +118,10 @@ const InstallPrompt = () => {
     setVisible(false);
     setDeferredPrompt(null);
     setPreviewMode(false);
+
+    if (!bypassPromptRef.current && typeof window !== "undefined") {
+      window.sessionStorage?.setItem(SESSION_HIDDEN_KEY, "1");
+    }
   }, []);
 
   if (!visible || (!deferredPrompt && !previewMode)) {
@@ -131,6 +144,7 @@ const InstallPrompt = () => {
                 height={40}
                 className="rounded-xl"
                 priority
+                sizes="40px"
               />
             </div>
             <div>
@@ -179,6 +193,7 @@ const InstallPrompt = () => {
           height={140}
           className="absolute -top-4 -right-3 w-24 drop-shadow-[0px_8px_16px_rgba(0,0,0,0.25)]"
           priority
+          sizes="140px"
         />
       </div>
     </div>
