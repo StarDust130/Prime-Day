@@ -1,18 +1,7 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/lib/theme-provider";
-
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import PWAClient from "@/components/pwa/PWAClient";
 
 export const metadata: Metadata = {
   title: "Prime Day",
@@ -25,16 +14,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-  
-      <html lang="en">
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased  `}
+    <html lang="en">
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#ffffff" />
+      </head>
+      <body className="antialiased bg-white text-[#0f0f0f]">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
         >
-   
-            {children}
-        
-        </body>
-      </html>
-
+          <PWAClient />
+          {children}
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }
