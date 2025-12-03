@@ -149,7 +149,7 @@ const InstallPrompt = () => {
 
           <div className="flex flex-col gap-2 sm:flex-row">
             <button
-              className={`flex-1 rounded-2xl border-2 border-black bg-[#ff61d8] py-2.5 text-xs font-black uppercase tracking-[0.35em] text-white shadow-[3px_3px_0px_#000] transition-transform active:translate-y-0.5 ${
+              className={`flex-1 rounded-2xl border-2 border-black bg-sky-500 py-2.5 text-xs font-black uppercase tracking-[0.35em] text-white shadow-[3px_3px_0px_#000] transition-transform active:translate-y-0.5 ${
                 installReady ? "" : "cursor-not-allowed opacity-60"
               }`}
               onClick={installReady ? handleInstall : undefined}
