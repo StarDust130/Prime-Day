@@ -39,7 +39,14 @@ const DashboardPage = () => {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const res = await fetch("/api/dashboard");
+        // Calculate today in UTC based on local time
+        const today = new Date();
+        const utcDate = new Date(
+          Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())
+        );
+        const dateStr = utcDate.toISOString();
+
+        const res = await fetch(`/api/dashboard?date=${dateStr}`);
         const json = await res.json();
         if (json.success) {
           setData(json.data);

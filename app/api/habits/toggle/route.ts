@@ -24,9 +24,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Habit not found" }, { status: 404 });
     }
 
-    // Normalize date to start of day for comparison
+    // Normalize date to start of day for comparison (UTC)
     const targetDate = new Date(date);
-    targetDate.setHours(0, 0, 0, 0);
+    targetDate.setUTCHours(0, 0, 0, 0);
     const targetISO = targetDate.toISOString();
 
     // Check if date exists in history

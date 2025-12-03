@@ -17,15 +17,24 @@ export async function GET(req: Request) {
     const { userId } = JSON.parse(userCookie.value);
     await connectDB();
 
+    // Get date from query param or default to server time
+    const url = new URL(req.url);
+    const dateParam = url.searchParams.get("date");
+
+    let todayISO;
+    if (dateParam) {
+      todayISO = dateParam;
+    } else {
+      const today = new Date();
+      today.setUTCHours(0, 0, 0, 0);
+      todayISO = today.toISOString();
+    }
+
     const user = await User.findById(userId).select("username email");
     const habits = await Habit.find({ userId });
     const goals = await Goal.find({ userId });
 
     // Calculate stats
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayISO = today.toISOString();
-
     const activeHabits = habits.length;
     const completedToday = habits.filter((h) =>
       h.completedDates.some((d: Date) => d.toISOString() === todayISO)

@@ -15,6 +15,7 @@ import {
   Trash2,
   Edit,
   ArrowLeft,
+  X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
@@ -63,6 +64,26 @@ const HabitsPage = () => {
     d.toLocaleDateString("en-US", { weekday: "narrow" })
   );
 
+  const handlePrev = () => {
+    const newDate = new Date(today);
+    if (viewMode === "day") {
+      newDate.setDate(today.getDate() - 1);
+    } else {
+      newDate.setDate(today.getDate() - 7);
+    }
+    setToday(newDate);
+  };
+
+  const handleNext = () => {
+    const newDate = new Date(today);
+    if (viewMode === "day") {
+      newDate.setDate(today.getDate() + 1);
+    } else {
+      newDate.setDate(today.getDate() + 7);
+    }
+    setToday(newDate);
+  };
+
   // State
   const [viewMode, setViewMode] = useState<"day" | "week">("day");
   const [hideCompleted, setHideCompleted] = useState(false);
@@ -70,6 +91,10 @@ const HabitsPage = () => {
   const [loading, setLoading] = useState(true);
   const [deleteHabitId, setDeleteHabitId] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [confirmTick, setConfirmTick] = useState<{
+    habitId: string;
+    date: Date;
+  } | null>(null);
 
   // Fetch Habits
   const fetchHabits = async () => {
@@ -117,25 +142,23 @@ const HabitsPage = () => {
     setDeleteHabitId(null);
   };
 
+  // Helper to get UTC start of day from a local date
+  const toUTCStartOfDay = (date: Date) => {
+    return new Date(
+      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+    );
+  };
+
   // Check if a habit is completed on a specific date
   const isHabitCompleted = (habit: Habit, date: Date) => {
-    const dateStr = date.toISOString(); // The backend stores ISO strings set to 00:00:00
-    // We need to match the backend's storage format.
-    // The backend does: targetDate.setHours(0, 0, 0, 0); const targetISO = targetDate.toISOString();
-
-    // Ensure the date passed in is also set to start of day
-    const checkDate = new Date(date);
-    checkDate.setHours(0, 0, 0, 0);
-    const checkISO = checkDate.toISOString();
-
+    const checkISO = toUTCStartOfDay(date).toISOString();
     return habit.completedDates.includes(checkISO);
   };
 
   // Toggle habit completion logic
   const toggleHabit = async (habitId: string, date: Date) => {
     // Optimistic Update
-    const targetDate = new Date(date);
-    targetDate.setHours(0, 0, 0, 0);
+    const targetDate = toUTCStartOfDay(date);
     const targetISO = targetDate.toISOString();
 
     setHabits((prev) =>
@@ -148,12 +171,18 @@ const HabitsPage = () => {
           if (exists) {
             newDates = h.completedDates.filter((d) => d !== targetISO);
             // Simple streak adjustment (not perfect without full recalc but good for optimistic)
-            if (targetDate.toDateString() === new Date().toDateString()) {
+            if (
+              targetDate.toDateString() ===
+              toUTCStartOfDay(new Date()).toDateString()
+            ) {
               newStreak = Math.max(0, h.streak - 1);
             }
           } else {
             newDates = [...h.completedDates, targetISO];
-            if (targetDate.toDateString() === new Date().toDateString()) {
+            if (
+              targetDate.toDateString() ===
+              toUTCStartOfDay(new Date()).toDateString()
+            ) {
               newStreak = h.streak + 1;
             }
           }
@@ -168,7 +197,7 @@ const HabitsPage = () => {
       const res = await fetch("/api/habits/toggle", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ habitId, date: targetDate.toISOString() }),
+        body: JSON.stringify({ habitId, date: targetISO }),
       });
 
       const data = await res.json();
@@ -287,26 +316,42 @@ const HabitsPage = () => {
         <div className="flex flex-col gap-4 mb-8">
           {/* Date Navigator */}
           <div className="flex items-center justify-between bg-white border-2 border-black p-1 rounded-xl shadow-[4px_4px_0px_0px_#000]">
-            <button className="p-3 rounded-lg hover:bg-gray-100 transition-colors active:scale-90">
+            <button
+              onClick={handlePrev}
+              className="p-3 rounded-lg hover:bg-gray-100 transition-colors active:scale-90"
+            >
               <ChevronLeft className="w-5 h-5" />
             </button>
             <div className="text-center flex-1">
               <h2 className="text-sm font-black uppercase tracking-widest">
-                Current Week
+                {viewMode === "day" ? "Current Day" : "Current Week"}
               </h2>
               <p className="text-[10px] font-bold text-gray-400 font-mono">
-                {weekDates[0].toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                })}{" "}
-                -{" "}
-                {weekDates[6].toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                })}
+                {viewMode === "day" ? (
+                  today.toLocaleDateString("en-US", {
+                    weekday: "long",
+                    month: "short",
+                    day: "numeric",
+                  })
+                ) : (
+                  <>
+                    {weekDates[0].toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    })}{" "}
+                    -{" "}
+                    {weekDates[6].toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </>
+                )}
               </p>
             </div>
-            <button className="p-3 rounded-lg hover:bg-gray-100 transition-colors active:scale-90">
+            <button
+              onClick={handleNext}
+              className="p-3 rounded-lg hover:bg-gray-100 transition-colors active:scale-90"
+            >
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
@@ -585,9 +630,13 @@ const HabitsPage = () => {
                             habit,
                             dateForDay
                           );
+                          const todayDate = new Date();
+                          todayDate.setHours(0, 0, 0, 0);
                           const isToday =
                             dateForDay.toDateString() ===
                             new Date().toDateString();
+                          const isPast = dateForDay < todayDate;
+
                           return (
                             <div
                               key={i}
@@ -602,14 +651,23 @@ const HabitsPage = () => {
                               </span>
 
                               <button
-                                onClick={() =>
-                                  toggleHabit(habit._id, dateForDay)
-                                }
+                                onClick={() => {
+                                  if (isPast && !isCompleted) {
+                                    setConfirmTick({
+                                      habitId: habit._id,
+                                      date: dateForDay,
+                                    });
+                                  } else {
+                                    toggleHabit(habit._id, dateForDay);
+                                  }
+                                }}
                                 className={`
                                                     w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-black flex items-center justify-center transition-all
                                                     ${
                                                       isCompleted
                                                         ? `${habit.color} shadow-[2px_2px_0px_0px_#000]`
+                                                        : isPast
+                                                        ? "bg-red-50 hover:bg-red-100 border-red-200"
                                                         : "bg-white hover:bg-gray-50"
                                                     }
                                                     ${
@@ -619,7 +677,7 @@ const HabitsPage = () => {
                                                     }
                                                 `}
                               >
-                                {isCompleted && (
+                                {isCompleted ? (
                                   <Check
                                     className={`w-4 h-4 ${
                                       habit.color === "bg-[#121212]"
@@ -628,7 +686,12 @@ const HabitsPage = () => {
                                     }`}
                                     strokeWidth={3}
                                   />
-                                )}
+                                ) : isPast ? (
+                                  <X
+                                    className="w-4 h-4 text-red-500"
+                                    strokeWidth={4}
+                                  />
+                                ) : null}
                               </button>
                             </div>
                           );
@@ -678,6 +741,48 @@ const HabitsPage = () => {
               className="px-4 py-2 rounded-xl font-bold border-2 border-black bg-red-500 text-white shadow-[2px_2px_0px_0px_#000] active:translate-y-[2px] active:shadow-none transition-all uppercase text-sm hover:bg-red-600"
             >
               Yes, Delete It
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* --- CONFIRM TICK DIALOG --- */}
+      <Dialog
+        open={!!confirmTick}
+        onOpenChange={(open) => !open && setConfirmTick(null)}
+      >
+        <DialogContent className="bg-white border-2 border-black shadow-[4px_4px_0px_0px_#000] rounded-2xl sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black uppercase tracking-tight">
+              Mark as Done?
+            </DialogTitle>
+            <DialogDescription className="text-gray-500 font-medium">
+              Did you complete this habit on{" "}
+              {confirmTick?.date.toLocaleDateString("en-US", {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+              })}
+              ?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2 sm:justify-end mt-4">
+            <button
+              onClick={() => setConfirmTick(null)}
+              className="px-4 py-2 rounded-xl font-bold border-2 border-transparent hover:bg-gray-100 transition-colors uppercase text-sm"
+            >
+              No
+            </button>
+            <button
+              onClick={() => {
+                if (confirmTick) {
+                  toggleHabit(confirmTick.habitId, confirmTick.date);
+                  setConfirmTick(null);
+                }
+              }}
+              className="px-4 py-2 rounded-xl font-bold border-2 border-black bg-[#38BDF8] text-white shadow-[2px_2px_0px_0px_#000] active:translate-y-[2px] active:shadow-none transition-all uppercase text-sm hover:bg-sky-500"
+            >
+              Yes, I did it
             </button>
           </DialogFooter>
         </DialogContent>
